@@ -1,0 +1,54 @@
+name: Version Minor
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check unreleased section
+        id: check
+        run: |
+          # [Unreleased] と次の ## (or ---) の間に実質的な内容があるか判定
+          content=$(sed -n '/^## \[Unreleased\]/,/^---$/{/^## \[Unreleased\]/d;/^---$/d;p;}' CHANGELOG.md | sed '/^$/d')
+          if [ -z "$content" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No unreleased changes found. Skipping version bump."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "Unreleased changes found:"
+            echo "$content"
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.check.outputs.has_changes == 'true'
+
+      - run: bun install
+        if: steps.check.outputs.has_changes == 'true'
+
+      - name: Configure git
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump minor version
+        if: steps.check.outputs.has_changes == 'true'
+        run: npm version minor -m "chore: bump version to %s"
+
+      - name: Push version commit and tag
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          git push origin main
+          git push origin --tags
