@@ -1,8 +1,15 @@
 {
   "name": "slidecode",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI-friendly React component library for building presentations",
-  "keywords": ["react", "presentation", "slides", "components", "svg-charts", "ai"],
+  "keywords": [
+    "react",
+    "presentation",
+    "slides",
+    "components",
+    "svg-charts",
+    "ai"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/pomesaka/SlideCode.git"
