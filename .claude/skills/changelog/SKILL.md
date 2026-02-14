@@ -1,4 +1,7 @@
-# Skill: /changelog
+---
+name: changelog
+description: main ブランチとの差分から CHANGELOG.md を更新する
+---
 
 CHANGELOG.md を main ブランチとの差分から更新する。
 
