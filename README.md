@@ -1,4 +1,4 @@
-# SlideCraft
+# SlideCode
 
 AIが生成しやすいプレゼンテーション用Reactコンポーネントライブラリ。
 
@@ -25,14 +25,14 @@ PowerPointの代わりに、React/JSXでスライドを記述し、ブラウザ�
 ## インストール
 
 ```bash
-npm install slidecraft
+npm install slidecode
 ```
 
 ## クイックスタート
 
 ```tsx
-import { Deck, Slide, Title, Body, CoverSlide } from "slidecraft";
-import { GOOGLE_FONTS_URL } from "slidecraft";
+import { Deck, Slide, Title, Body, CoverSlide } from "slidecode";
+import { GOOGLE_FONTS_URL } from "slidecode";
 
 // index.html の <head> に Google Fonts リンクを追加
 // <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
@@ -42,12 +42,12 @@ function App() {
     <Deck theme="corporate">
       <CoverSlide
         title="My Presentation"
-        subtitle="Built with SlideCraft"
+        subtitle="Built with SlideCode"
         author="Your Name"
         date="2026-01-01"
       />
       <Slide>
-        <Title size="xl">Hello, SlideCraft!</Title>
+        <Title size="xl">Hello, SlideCode!</Title>
         <Body>React/JSXでスライドを記述できます。</Body>
       </Slide>
     </Deck>

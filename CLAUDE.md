@@ -1,8 +1,8 @@
-# CLAUDE.md — SlideCraft 開発ガイド
+# CLAUDE.md — SlideCode 開発ガイド
 
 ## プロジェクト概要
 
-SlideCraftは、AIが生成しやすいプレゼンテーション用Reactコンポーネントライブラリ。
+SlideCodeは、AIが生成しやすいプレゼンテーション用Reactコンポーネントライブラリ。
 React/JSXでスライドを記述し、ブラウザ上でプレゼンテーションを表示する。
 npmパッケージとして配布する。
 
