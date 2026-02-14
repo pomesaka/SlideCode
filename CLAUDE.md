@@ -266,3 +266,4 @@ export type { SlideTheme, DeckProps, SlideProps, SplitProps, GridProps,
 - チャートはすべてSVGで自前実装し、外部チャートライブラリに依存しない
 - React.FC は使わず、関数宣言でコンポーネントを定義する
 - 定数 `SLIDE_W = 960`, `SLIDE_H = 540` を使用する
+- **export するすべてのコンポーネント・関数・型には `@example` を含む JSDoc を必ず記述する**（IDE補完やAIによるコード生成時の発見性を高めるため）

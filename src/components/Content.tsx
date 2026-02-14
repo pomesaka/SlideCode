@@ -15,11 +15,24 @@ const titleSizeMap: Record<TitleSize, number> = {
 };
 
 export interface TitleProps {
+  /**
+   * 表示するテキスト。省略すると SlideContext の title を自動取得する。
+   * @example
+   * // 自動取得: Slide の title prop から描画
+   * <Slide title="概要"><Title /></Slide>
+   *
+   * // 明示指定: children をそのまま描画
+   * <Slide><Title>概要</Title></Slide>
+   */
   children?: ReactNode;
   size?: TitleSize;
   color?: string;
 }
 
+/**
+ * スライドの見出しを描画する。
+ * children を省略すると、親の `<Slide title="...">` から自動取得する。
+ */
 export function Title({ children, size = "lg", color }: TitleProps) {
   const theme = useTheme();
   const slide = useSlideContext();
@@ -45,11 +58,23 @@ export function Title({ children, size = "lg", color }: TitleProps) {
 
 /* ── Subtitle ── */
 
+/**
+ * @example
+ * <Subtitle>プロジェクトの概要と目的</Subtitle>
+ */
 export interface SubtitleProps {
   children: ReactNode;
   color?: string;
 }
 
+/**
+ * スライドのサブ見出し。textMuted カラーで 16px 描画。
+ * @example
+ * <Slide title="概要">
+ *   <Title />
+ *   <Subtitle>背景と目的</Subtitle>
+ * </Slide>
+ */
 export function Subtitle({ children, color }: SubtitleProps) {
   const theme = useTheme();
   return (
@@ -77,12 +102,23 @@ const bodySizeMap: Record<BodySize, number> = {
   lg: 16,
 };
 
+/**
+ * @example
+ * <Body size="lg">本文テキストをここに記述します。</Body>
+ */
 export interface BodyProps {
   children: ReactNode;
+  /** @default "md" */
   size?: BodySize;
   color?: string;
 }
 
+/**
+ * 本文テキスト。size で sm(12px) / md(14px) / lg(16px) を切り替え。
+ * @example
+ * <Body>前年比120%の成長を達成しました。</Body>
+ * <Body size="sm">注釈テキスト</Body>
+ */
 export function Body({ children, size = "md", color }: BodyProps) {
   const theme = useTheme();
   return (
@@ -101,11 +137,21 @@ export function Body({ children, size = "md", color }: BodyProps) {
 
 /* ── Badge ── */
 
+/**
+ * @example
+ * <Badge>NEW</Badge>
+ * <Badge color="#22C55E">LIVE</Badge>
+ */
 export interface BadgeProps {
   children: ReactNode;
   color?: string;
 }
 
+/**
+ * Pill 形状のラベル。背景は color + "18"（半透明）、11px uppercase。
+ * @example
+ * <Badge>NEW FEATURE</Badge>
+ */
 export function Badge({ children, color }: BadgeProps) {
   const theme = useTheme();
   const c = color ?? theme.accent;
@@ -131,11 +177,22 @@ export function Badge({ children, color }: BadgeProps) {
 
 /* ── BulletList ── */
 
+/**
+ * @example
+ * <BulletList items={["項目A", "項目B", "項目C"]} />
+ * <BulletList items={["Done", "In Progress"]} icon="✓" />
+ */
 export interface BulletListProps {
   items: string[];
+  /** @default "→" */
   icon?: string;
 }
 
+/**
+ * アイコン付き箇条書きリスト。icon はテーマの accent カラーで表示。
+ * @example
+ * <BulletList items={["React 18+", "TypeScript", "Vite"]} />
+ */
 export function BulletList({ items, icon = "→" }: BulletListProps) {
   const theme = useTheme();
   return (
@@ -164,11 +221,22 @@ export function BulletList({ items, icon = "→" }: BulletListProps) {
 
 /* ── Quote ── */
 
+/**
+ * @example
+ * <Quote author="Steve Jobs">Stay hungry, stay foolish.</Quote>
+ */
 export interface QuoteProps {
   children: ReactNode;
   author?: string;
 }
 
+/**
+ * 引用ブロック。左に accent カラーのボーダー、fontDisplay 22px italic。
+ * @example
+ * <Quote author="Albert Einstein">
+ *   Imagination is more important than knowledge.
+ * </Quote>
+ */
 export function Quote({ children, author }: QuoteProps) {
   const theme = useTheme();
   return (
@@ -208,11 +276,24 @@ export function Quote({ children, author }: QuoteProps) {
 
 /* ── CodeBlock ── */
 
+/**
+ * @example
+ * <CodeBlock lang="ts">const x: number = 42;</CodeBlock>
+ */
 export interface CodeBlockProps {
   children: string;
   lang?: string;
 }
 
+/**
+ * コードブロック。JetBrains Mono / Fira Code、13px、右上に言語ラベル表示。
+ * @example
+ * <CodeBlock lang="tsx">
+ * {`function Hello() {
+ *   return <div>Hello</div>;
+ * }`}
+ * </CodeBlock>
+ */
 export function CodeBlock({ children, lang }: CodeBlockProps) {
   const theme = useTheme();
   return (
@@ -253,14 +334,29 @@ export function CodeBlock({ children, lang }: CodeBlockProps) {
 
 /* ── StatCard ── */
 
+/**
+ * @example
+ * <StatCard value="$1.2M" label="Revenue" change="+12%" icon="💰" />
+ * <StatCard value="99.9%" label="Uptime" compact />
+ */
 export interface StatCardProps {
   value: string;
   label: string;
+  /** "-" で始まると赤↓、それ以外は緑↑ で表示 */
   change?: string;
   icon?: string;
   compact?: boolean;
 }
 
+/**
+ * KPI カード。value(28px) + label(12px) + change(増減表示)。
+ * @example
+ * <Grid cols={3}>
+ *   <StatCard value="$1.2M" label="Revenue" change="+12%" icon="💰" />
+ *   <StatCard value="3,400" label="Users" change="+8%" icon="👥" />
+ *   <StatCard value="99.9%" label="Uptime" icon="⚡" />
+ * </Grid>
+ */
 export function StatCard({ value, label, change, icon, compact }: StatCardProps) {
   const theme = useTheme();
   const isNegative = change?.startsWith("-");

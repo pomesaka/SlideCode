@@ -18,7 +18,12 @@ export const SLIDE_H = 540;
 
 export interface DeckProps {
   children: ReactNode;
+  /**
+   * テーマ名（プリセット）またはカスタム SlideTheme オブジェクト。
+   * @default "corporate"
+   */
   theme?: string | SlideTheme;
+  /** スライド切り替え時に呼ばれるコールバック。 */
   onSlideChange?: (index: number) => void;
 }
 
@@ -49,6 +54,18 @@ function collectAgendaItems(nodes: ReturnType<typeof Children.toArray>): AgendaI
   return items;
 }
 
+/**
+ * プレゼンテーションのルートコンテナ。
+ * children 内の title prop を持つスライドを自動スキャンし、
+ * AgendaSlide 用の目次データを DeckContext で配信する。
+ * @example
+ * <Deck theme="corporate">
+ *   <CoverSlide title="My Talk" />
+ *   <AgendaSlide />
+ *   <Slide title="Section 1"><Title /><Body>...</Body></Slide>
+ *   <ThankYouSlide />
+ * </Deck>
+ */
 export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps) {
   const slides = Children.toArray(children);
   const total = slides.length;
