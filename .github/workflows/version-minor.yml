@@ -1,0 +1,35 @@
+name: Version Minor
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump minor version
+        run: npm version minor -m "chore: bump version to %s"
+
+      - name: Push version commit and tag
+        run: |
+          git push origin main
+          git push origin --tags
