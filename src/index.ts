@@ -43,6 +43,8 @@ export { themes, GOOGLE_FONTS_URL } from "./themes";
 export type { SlideTheme } from "./themes";
 export { ThemeContext, useTheme } from "./hooks/useTheme";
 export { useContainerScale } from "./hooks/useContainerScale";
+export { SlideContext, useSlideContext } from "./hooks/useSlideContext";
+export { DeckContext, useAgendaItems } from "./hooks/useDeckContext";
 
 // Types — Components
 export type { DeckProps } from "./components/Deck";
@@ -87,3 +89,7 @@ export type {
   TeamSlideProps,
   TeamMember,
 } from "./templates";
+
+// Types — Hooks
+export type { SlideMetadata } from "./hooks/useSlideContext";
+export type { AgendaItem } from "./hooks/useDeckContext";
