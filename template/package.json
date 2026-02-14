@@ -10,7 +10,7 @@
   "dependencies": {
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "slidecode": "^0.1.0"
+    "slidecode": "github:pomesaka/SlideCode"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

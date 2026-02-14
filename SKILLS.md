@@ -33,6 +33,14 @@ my-presentation/
         └── deploy.yml      # mainにpushすると自動デプロイ
 ```
 
+### インストール方法
+
+SlideCodeはGitHubリポジトリから直接インストールする:
+
+```bash
+npm install github:pomesaka/SlideCode
+```
+
 ### 手順
 
 ```bash
@@ -40,7 +48,7 @@ my-presentation/
 mkdir my-presentation && cd my-presentation
 # template/ の内容を全てコピー
 
-# 2. 依存関係インストール
+# 2. 依存関係インストール（slidecodeはGitHubから取得される）
 npm install
 
 # 3. src/App.tsx を編集（プレゼン内容を書く）
