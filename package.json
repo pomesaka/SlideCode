@@ -1,6 +1,14 @@
 {
   "name": "slidecode",
   "version": "0.1.0",
+  "description": "AI-friendly React component library for building presentations",
+  "keywords": ["react", "presentation", "slides", "components", "svg-charts", "ai"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pomesaka/SlideCode.git"
+  },
+  "homepage": "https://github.com/pomesaka/SlideCode",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -12,9 +20,6 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
@@ -34,7 +39,7 @@
     "build": "vite build",
     "build:demo": "vite build --config demo/vite.config.ts",
     "preview": "vite preview --config demo/vite.config.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "license": "MIT"
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
+  }
 }
