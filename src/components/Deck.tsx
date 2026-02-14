@@ -2,13 +2,16 @@ import {
   useState,
   useEffect,
   useRef,
+  useMemo,
   Children,
+  isValidElement,
   type ReactNode,
   type CSSProperties,
 } from "react";
 import { type SlideTheme, themes } from "../themes";
 import { ThemeContext } from "../hooks/useTheme";
 import { useContainerScale } from "../hooks/useContainerScale";
+import { DeckContext, type AgendaItem } from "../hooks/useDeckContext";
 
 export const SLIDE_W = 960;
 export const SLIDE_H = 540;
@@ -17,6 +20,33 @@ export interface DeckProps {
   children: ReactNode;
   theme?: string | SlideTheme;
   onSlideChange?: (index: number) => void;
+}
+
+/** Component names excluded from auto-generated agenda items. */
+const AGENDA_EXCLUDE = new Set(["CoverSlide", "ThankYouSlide", "AgendaSlide"]);
+
+function collectAgendaItems(nodes: ReturnType<typeof Children.toArray>): AgendaItem[] {
+  const items: AgendaItem[] = [];
+  let num = 0;
+  for (const child of nodes) {
+    if (!isValidElement(child)) continue;
+    const name = typeof child.type === "function" ? child.type.name : "";
+    if (AGENDA_EXCLUDE.has(name)) continue;
+    const props = child.props as Record<string, unknown>;
+    if (typeof props.title !== "string") continue;
+    num++;
+    items.push({
+      number: num,
+      title: props.title,
+      description:
+        typeof props.subtitle === "string"
+          ? props.subtitle
+          : typeof props.description === "string"
+            ? props.description
+            : undefined,
+    });
+  }
+  return items;
 }
 
 export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps) {
@@ -29,6 +59,8 @@ export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps
 
   const resolvedTheme: SlideTheme =
     typeof theme === "string" ? themes[theme] ?? themes.corporate : theme;
+
+  const agendaItems = useMemo(() => collectAgendaItems(slides), [slides]);
 
   const go = (index: number) => {
     const next = Math.max(0, Math.min(total - 1, index));
@@ -80,6 +112,7 @@ export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps
 
   return (
     <ThemeContext.Provider value={resolvedTheme}>
+    <DeckContext.Provider value={agendaItems}>
       <div
         ref={containerRef}
         style={{ maxWidth: SLIDE_W, margin: "0 auto", fontFamily: resolvedTheme.fontBody, overflow: "hidden" }}
@@ -172,6 +205,7 @@ export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps
           </button>
         </div>
       </div>
+    </DeckContext.Provider>
     </ThemeContext.Provider>
   );
 }

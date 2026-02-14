@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { useAgendaItems } from "../hooks/useDeckContext";
 import { SLIDE_W, SLIDE_H } from "../components/Deck";
 
 /* ── CoverSlide ── */
@@ -227,11 +228,13 @@ export function ThankYouSlide({ title = "Thank You", subtitle, contact }: ThankY
 
 export interface AgendaSlideProps {
   title?: string;
-  items: Array<{ number: number; title: string; description?: string }>;
+  items?: Array<{ number: number; title: string; description?: string }>;
 }
 
 export function AgendaSlide({ title = "Agenda", items }: AgendaSlideProps) {
   const theme = useTheme();
+  const autoItems = useAgendaItems();
+  const resolvedItems = items ?? autoItems;
 
   return (
     <div
@@ -258,7 +261,7 @@ export function AgendaSlide({ title = "Agenda", items }: AgendaSlideProps) {
         {title}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {items.map((item, i) => (
+        {resolvedItems.map((item, i) => (
           <div
             key={i}
             style={{

@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { useTheme } from "../hooks/useTheme";
+import { useSlideContext } from "../hooks/useSlideContext";
 
 /* ── Title ── */
 
@@ -14,13 +15,18 @@ const titleSizeMap: Record<TitleSize, number> = {
 };
 
 export interface TitleProps {
-  children: ReactNode;
+  children?: ReactNode;
   size?: TitleSize;
   color?: string;
 }
 
 export function Title({ children, size = "lg", color }: TitleProps) {
   const theme = useTheme();
+  const slide = useSlideContext();
+  const content = children ?? slide.title;
+
+  if (!content) return null;
+
   return (
     <div
       style={{
@@ -32,7 +38,7 @@ export function Title({ children, size = "lg", color }: TitleProps) {
         color: color ?? theme.text,
       }}
     >
-      {children}
+      {content}
     </div>
   );
 }
