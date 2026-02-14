@@ -19,53 +19,33 @@ bun run typecheck    # TypeScriptの型チェック
 - **言語**: TypeScript (strict mode)
 - **フレームワーク**: React 18+
 - **ビルド**: Vite 5 (ライブラリモード)
+- **パッケージマネージャ**: Bun
 - **型生成**: vite-plugin-dts
 - **チャート**: SVG自前実装（外部ライブラリ不要）
 - **フォント**: Google Fonts
 - **ライセンス**: MIT
 
-## ディレクトリ構成（予定）
+## ディレクトリ構成
 
 ```
 src/
   index.ts              # エントリポイント（全エクスポート）
-  types.ts              # 共有型定義
-  theme/
-    themes.ts           # プリセットテーマ定義（corporate, startup, minimal, nature）
-    ThemeContext.tsx     # React Context + useTheme フック
-    fonts.ts            # GOOGLE_FONTS_URL 定数
-  core/
-    Deck.tsx            # スライドコンテナ（ナビゲーション、テーマ配信）
-    Slide.tsx           # 個別スライド（960x540 スケールトゥフィット）
-  layout/
-    Split.tsx           # 左右2カラム
-    Grid.tsx            # N列グリッド
-  content/
-    Title.tsx           # 見出し（sm/md/lg/xl/xxl）
-    Subtitle.tsx        # サブ見出し
-    Body.tsx            # 本文
-    Badge.tsx           # Pill形状ラベル
-    BulletList.tsx      # アイコン付きリスト
-    Quote.tsx           # 引用ブロック
-    CodeBlock.tsx       # コードブロック
-    StatCard.tsx        # KPIカード
+  hooks/
+    useTheme.ts         # ThemeContext + useTheme フック
+    useContainerScale.ts # スケーリング用フック
+    useSlideContext.ts   # SlideContext（Slideのtitle/descriptionを子に配信）
+    useDeckContext.ts    # DeckContext（Deckが収集したAgendaItemsを配信）
+  themes/
+    index.ts            # プリセットテーマ定義（corporate, startup, minimal, nature）
+  components/
+    Deck.tsx            # スライドコンテナ（ナビゲーション、テーマ配信、AgendaItem収集）
+    Slide.tsx           # 個別スライド（960x540、SlideContext配信）
+    Layout.tsx          # Split（左右2カラム）、Grid（N列グリッド）
+    Content.tsx         # Title, Subtitle, Body, Badge, BulletList, Quote, CodeBlock, StatCard
   charts/
-    BarChart.tsx        # 縦棒グラフ
-    HorizontalBarChart.tsx  # 横棒グラフ
-    GroupedBarChart.tsx # グループ棒グラフ
-    LineChart.tsx       # 折れ線グラフ
-    AreaChart.tsx       # 積み上げエリアチャート
-    DonutChart.tsx      # ドーナツチャート
-    ScatterPlot.tsx     # 散布図
-    Sparkline.tsx       # スパークライン
-    ProgressRing.tsx    # 円形プログレス
-    ProgressBar.tsx     # プログレスバー
+    index.tsx           # 全チャートコンポーネント
   templates/
-    CoverSlide.tsx      # 表紙
-    SectionDivider.tsx  # セクション区切り
-    ThankYouSlide.tsx   # 締めスライド
-    AgendaSlide.tsx     # 目次
-    TeamSlide.tsx       # チーム紹介
+    index.tsx           # CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, TeamSlide
 ```
 
 ## アーキテクチャ
@@ -82,6 +62,21 @@ src/
 - React Context (`ThemeContext`) でテーマを配信
 - `useTheme()` フックでコンポーネントからアクセス
 - `Deck` がテーマ名（string）またはカスタム `SlideTheme` オブジェクトを受け取りProviderで配信
+
+### SlideContext（スライドメタデータ配信）
+
+- `Slide` コンポーネントが `title` / `description` props を `SlideContext` で子コンポーネントに配信
+- `Title` コンポーネントは `children` が省略された場合、`SlideContext` から `title` を自動取得して描画
+- `useSlideContext()` フックでアクセス可能
+
+### DeckContext（AgendaSlide自動生成）
+
+- `Deck` がレンダリング時に children をスキャンし、`title` propを持つスライドから `AgendaItem[]` を自動収集
+- `AgendaSlide` は `items` propが省略された場合、`DeckContext` から自動取得して描画
+- 収集対象: `Slide`（`title` propあり）、`SectionDivider`（`title`/`subtitle` propあり）
+- 自動除外: `CoverSlide`, `ThankYouSlide`, `AgendaSlide`（目次に含めない）
+- `description` は `subtitle` → `description` propの順にフォールバック
+- `useAgendaItems()` フックでアクセス可能
 
 ### SlideTheme 型
 
@@ -121,9 +116,12 @@ interface SlideTheme {
 - ドットインジケーター（20枚以下はドット、超える場合は「n / total」テキスト）
 - Prev / Next ボタン（端で disabled）
 - `onSlideChange(index: number)` コールバック
+- **children内の `title` propを持つスライドを自動スキャンし、`DeckContext` で `AgendaItem[]` を配信**
 
 ### Slide
 
+- **`title?: string`** — スライドのタイトルメタデータ。SlideContextで子に配信され、AgendaSlide自動生成の対象になる
+- **`description?: string`** — スライドの説明メタデータ。SlideContextで子に配信される
 - 背景: `bg`, `gradient` props
 - パディング: デフォルト `"48px 64px"`
 - Flex配置: `align`(デフォルト `"flex-start"`), `justify`(デフォルト `"center"`)
@@ -131,6 +129,7 @@ interface SlideTheme {
 ### コンテンツコンポーネント
 
 - **Title**: `fontDisplay` フォント、size: sm(18px)/md(26px)/lg(34px)/xl(42px)/xxl(54px)
+  - **`children` は省略可能** — 省略時は `SlideContext` から `title` を自動取得して描画。childrenが無くSlideContextにもtitleが無い場合は何も描画しない（`null`）
 - **Subtitle**: `textMuted` 色、16px
 - **Body**: size: sm(12px)/md(14px)/lg(16px)、lineHeight 1.6
 - **Badge**: Pill形状、背景は `color + "18"`（半透明）、11px uppercase
@@ -159,8 +158,64 @@ interface SlideTheme {
 - **CoverSlide**: primary→secondaryグラデーション、title/subtitle/author/date/tag
 - **SectionDivider**: surface背景、number(2桁ゼロ埋め、accent色、56px、opacity 0.5)/title/subtitle
 - **ThankYouSlide**: CoverSlideと同じグラデーション、中央揃え
-- **AgendaSlide**: items: Array<{number, title, description?}>、surfaceカード表示
+- **AgendaSlide**: surfaceカード表示
+  - **`items` は省略可能** — 省略時は `DeckContext` から自動生成（Deck内の `title` を持つSlide/SectionDividerから収集）
+  - 手動指定: `items: Array<{number, title, description?}>`
 - **TeamSlide**: members: Array<{name, role, avatar?}>、イニシャルアバター(chartColors使用)
+
+## 使用例
+
+### 基本（AgendaSlide自動生成 + Title自動取得）
+
+```tsx
+import { Deck, Slide, Title, Body, AgendaSlide, CoverSlide,
+         SectionDivider, ThankYouSlide } from "slidecode";
+
+function MyPresentation() {
+  return (
+    <Deck theme="corporate">
+      {/* CoverSlide → agenda対象外 */}
+      <CoverSlide title="Q4 Report" subtitle="2025年度" author="田中太郎" />
+
+      {/* AgendaSlide: items省略 → Deck内のSlide/SectionDividerから自動生成 */}
+      <AgendaSlide />
+
+      {/* Slide: title propあり → agendaに "01 売上報告" として収集される */}
+      <Slide title="売上報告" description="前年比と推移">
+        <Title />          {/* children省略 → "売上報告" を自動描画 */}
+        <Body>前年比120%の成長を達成しました。</Body>
+      </Slide>
+
+      {/* SectionDivider: title propあり → agendaに "02 今後の計画" として収集される */}
+      <SectionDivider title="今後の計画" subtitle="来期の戦略" number={2} />
+
+      {/* Slide: title propなし → agenda対象外 */}
+      <Slide>
+        <Title>詳細データ</Title>  {/* children明示 → そのまま描画 */}
+        <Body>補足スライドです。</Body>
+      </Slide>
+
+      {/* ThankYouSlide → agenda対象外 */}
+      <ThankYouSlide />
+    </Deck>
+  );
+}
+```
+
+上記の例では `<AgendaSlide />` に以下が自動生成されます:
+- 01 売上報告 / 前年比と推移
+- 02 今後の計画 / 来期の戦略
+
+### 手動指定（従来の方法、引き続き動作）
+
+```tsx
+<AgendaSlide
+  items={[
+    { number: 1, title: "売上報告", description: "前年比と推移" },
+    { number: 2, title: "今後の計画", description: "来期の戦略" },
+  ]}
+/>
+```
 
 ## エクスポート一覧
 
@@ -181,6 +236,9 @@ export { CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, TeamSlide }
 // Theme
 export { themes, GOOGLE_FONTS_URL, useTheme, ThemeContext, useContainerScale }
 
+// Slide/Deck Context
+export { SlideContext, useSlideContext, DeckContext, useAgendaItems }
+
 // Types（すべてのprops型をエクスポート）
 export type { SlideTheme, DeckProps, SlideProps, SplitProps, GridProps,
              TitleProps, TitleSize, SubtitleProps, BodyProps, BadgeProps,
@@ -190,7 +248,8 @@ export type { SlideTheme, DeckProps, SlideProps, SplitProps, GridProps,
              LineChartProps, AreaChartProps, DonutChartProps, ScatterPlotProps,
              SparklineProps, ProgressRingProps, ProgressBarProps,
              CoverSlideProps, SectionDividerProps, ThankYouSlideProps,
-             AgendaSlideProps, TeamSlideProps, TeamMember }
+             AgendaSlideProps, TeamSlideProps, TeamMember,
+             SlideMetadata, AgendaItem }
 ```
 
 ## 出力形式
