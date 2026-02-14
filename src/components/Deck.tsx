@@ -82,7 +82,7 @@ export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps
     <ThemeContext.Provider value={resolvedTheme}>
       <div
         ref={containerRef}
-        style={{ maxWidth: SLIDE_W, margin: "0 auto", fontFamily: resolvedTheme.fontBody }}
+        style={{ maxWidth: SLIDE_W, margin: "0 auto", fontFamily: resolvedTheme.fontBody, overflow: "hidden" }}
       >
         <div
           style={{
