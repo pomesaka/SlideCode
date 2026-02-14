@@ -10,18 +10,15 @@ export function useContainerScale(
     const el = ref.current;
     if (!el) return;
 
-    const parent = el.parentElement;
-    if (!parent) return;
-
     const update = () => {
-      const w = parent.clientWidth;
+      const w = el.clientWidth;
       setScale(Math.min(w / baseWidth, 1));
     };
 
     update();
 
     const ro = new ResizeObserver(update);
-    ro.observe(parent);
+    ro.observe(el);
     return () => ro.disconnect();
   }, [ref, baseWidth]);
 
