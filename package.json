@@ -40,6 +40,6 @@
     "build:demo": "vite build --config demo/vite.config.ts",
     "preview": "vite preview --config demo/vite.config.ts",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm run build"
+    "prepare": "bun run build"
   }
 }

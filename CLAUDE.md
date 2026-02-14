@@ -9,10 +9,9 @@ npmパッケージとして配布する。
 ## ビルド・開発コマンド
 
 ```bash
-npm install          # 依存関係のインストール
-npm run build        # ライブラリのビルド（dist/ に出力）
-npm run lint         # ESLint実行
-npm run typecheck    # TypeScriptの型チェック
+bun install          # 依存関係のインストール
+bun run build        # ライブラリのビルド（dist/ に出力）
+bun run typecheck    # TypeScriptの型チェック
 ```
 
 ## 技術スタック
