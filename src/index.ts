@@ -5,6 +5,7 @@ export { Split, Grid } from "./components/Layout";
 
 // Content
 export {
+  Spacer,
   Title,
   Subtitle,
   Body,
@@ -14,6 +15,14 @@ export {
   CodeBlock,
   StatCard,
 } from "./components/Content";
+
+// New Components
+export { Card } from "./components/Card";
+export { Image } from "./components/Image";
+export { Timeline } from "./components/Timeline";
+export { Table } from "./components/Table";
+export { LinkTag } from "./components/LinkTag";
+export { Checklist } from "./components/Checklist";
 
 // Charts
 export {
@@ -48,9 +57,11 @@ export { DeckContext, useAgendaItems } from "./hooks/useDeckContext";
 
 // Types — Components
 export type { DeckProps } from "./components/Deck";
-export type { SlideProps } from "./components/Slide";
+export type { SlideProps, SlideDecoration } from "./components/Slide";
 export type { SplitProps, GridProps } from "./components/Layout";
 export type {
+  SpacerProps,
+  SpacerSize,
   TitleProps,
   TitleSize,
   SubtitleProps,
@@ -61,6 +72,12 @@ export type {
   CodeBlockProps,
   StatCardProps,
 } from "./components/Content";
+export type { CardProps } from "./components/Card";
+export type { ImageProps } from "./components/Image";
+export type { TimelineProps, TimelineItemData } from "./components/Timeline";
+export type { TableProps } from "./components/Table";
+export type { LinkTagProps } from "./components/LinkTag";
+export type { ChecklistProps } from "./components/Checklist";
 
 // Types — Charts
 export type {

@@ -39,9 +39,15 @@ src/
     index.ts            # プリセットテーマ定義（corporate, startup, minimal, nature）
   components/
     Deck.tsx            # スライドコンテナ（ナビゲーション、テーマ配信、AgendaItem収集）
-    Slide.tsx           # 個別スライド（960x540、SlideContext配信）
+    Slide.tsx           # 個別スライド（960x540、SlideContext配信、decorations対応）
     Layout.tsx          # Split（左右2カラム）、Grid（N列グリッド）
-    Content.tsx         # Title, Subtitle, Body, Badge, BulletList, Quote, CodeBlock, StatCard
+    Content.tsx         # Spacer, Title, Subtitle, Body, Badge, BulletList, Quote, CodeBlock, StatCard
+    Card.tsx            # 汎用カード（icon/title/description/image/children）
+    Image.tsx           # 画像コンポーネント（角丸・キャプション対応）
+    Timeline.tsx        # タイムライン（時系列イベント表示）
+    Table.tsx           # テーブル（ヘッダー・striped・compact対応）
+    LinkTag.tsx         # 外部リンク用ピル型タグ
+    Checklist.tsx       # チェックリスト（チェック済み表示対応）
   charts/
     index.tsx           # 全チャートコンポーネント
   templates/
@@ -125,18 +131,29 @@ interface SlideTheme {
 - 背景: `bg`, `gradient` props
 - パディング: デフォルト `"48px 64px"`
 - Flex配置: `align`(デフォルト `"flex-start"`), `justify`(デフォルト `"center"`)
+- **`decorations?: SlideDecoration[]`** — 背景に絵文字などを散りばめる。`{ emoji, top?, right?, bottom?, left?, size?, opacity?, rotate? }`
 
 ### コンテンツコンポーネント
 
+- **Spacer**: 要素間スペーシング。`size`: xs(4px)/sm(8px)/md(16px)/lg(24px)/xl(32px) またはカスタム数値
 - **Title**: `fontDisplay` フォント、size: sm(18px)/md(26px)/lg(34px)/xl(42px)/xxl(54px)
   - **`children` は省略可能** — 省略時は `SlideContext` から `title` を自動取得して描画。childrenが無くSlideContextにもtitleが無い場合は何も描画しない（`null`）
 - **Subtitle**: `textMuted` 色、16px
 - **Body**: size: sm(12px)/md(14px)/lg(16px)、lineHeight 1.6
 - **Badge**: Pill形状、背景は `color + "18"`（半透明）、11px uppercase
-- **BulletList**: `items: string[]`, `icon: string`(デフォルト "→")、accent色アイコン
+- **BulletList**: `items: ReactNode[]`, `icon: string`(デフォルト "→")、accent色アイコン。**items にリンクや太字を含む ReactNode も指定可能**
 - **Quote**: 左ボーダー（accent色、3px）、fontDisplay 22px italic
-- **CodeBlock**: JetBrains Mono / Fira Code、13px、`lang` prop
+- **CodeBlock**: JetBrains Mono / Fira Code、13px、`lang` prop。**`lang` 指定時にシンタックスハイライト対応（JS/TS, Python, JSON, HTML, CSS）**。`plain` propでハイライト無効化可能
 - **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), icon, compact
+
+### 新規コンポーネント
+
+- **Card**: 汎用カード。`icon`, `title`(必須), `description`, `image`, `bg`, `children`。テーマのsurface/radius使用
+- **Image**: 画像コンポーネント。`src`, `alt`(必須), `width`, `height`, `radius`(none/sm/md/lg/full), `objectFit`, `caption`
+- **Timeline**: タイムライン表示。`items: { time, title, icon?, description? }[]`, `compact`。accent/primaryカラーでライン描画
+- **Table**: テーブル表示。`headers?: ReactNode[]`, `rows: ReactNode[][]`(必須), `striped`, `compact`。テーマのfontBody/surface/text使用
+- **LinkTag**: 外部リンク用ピル型タグ。`href`, `children`(必須), `target`(デフォルト `"_blank"`), `color`。`rel="noopener noreferrer"` 自動付与
+- **Checklist**: チェックリスト。`items: ReactNode[]`(必須), `title?`, `checked?: boolean[]`。accent色チェックマーク
 
 ### チャートコンポーネント
 
@@ -155,9 +172,14 @@ interface SlideTheme {
 
 ### テンプレートスライド
 
-- **CoverSlide**: primary→secondaryグラデーション、title/subtitle/author/date/tag
+- **CoverSlide**: primary→secondaryグラデーション、title(`ReactNode`)/subtitle(`ReactNode`)/author/date/tag(`ReactNode`)/gradient/decorations/footer
+  - `title` に ReactNode を渡せるため、2色分けや改行も可能
+  - `gradient` でカスタムグラデーションを指定可能
+  - `decorations` で背景に絵文字を散りばめられる
+  - `footer` でフッター領域にカスタムコンテンツを配置可能
 - **SectionDivider**: surface背景、number(2桁ゼロ埋め、accent色、56px、opacity 0.5)/title/subtitle
-- **ThankYouSlide**: CoverSlideと同じグラデーション、中央揃え
+- **ThankYouSlide**: CoverSlideと同じグラデーション、中央揃え。title(`ReactNode`)/subtitle(`ReactNode`)/contact/gradient/decorations/footer
+  - CoverSlide と同様に `gradient`, `decorations`, `footer` でカスタマイズ可能
 - **AgendaSlide**: surfaceカード表示
   - **`items` は省略可能** — 省略時は `DeckContext` から自動生成（Deck内の `title` を持つSlide/SectionDividerから収集）
   - 手動指定: `items: Array<{number, title, description?}>`
@@ -217,6 +239,129 @@ function MyPresentation() {
 />
 ```
 
+### 新コンポーネント使用例
+
+```tsx
+import { Deck, Slide, Title, Body, Spacer, Card, Image, Timeline,
+         Table, LinkTag, Checklist, BulletList, Grid,
+         CoverSlide, ThankYouSlide, CodeBlock } from "slidecode";
+
+function TravelPresentation() {
+  return (
+    <Deck theme="corporate">
+      {/* CoverSlide: ReactNode title + カスタムグラデーション + デコレーション */}
+      <CoverSlide
+        title={<>最高な沖縄<br /><span style={{ color: "#FFB703" }}>in 2026</span></>}
+        subtitle="石垣島 3泊4日 旅のしおり"
+        tag="Travel Booklet 2026"
+        gradient="linear-gradient(135deg, #0077B6, #90E0EF)"
+        decorations={[
+          { emoji: "🏝️", top: 30, right: 50, size: 80, opacity: 0.3 },
+          { emoji: "🌺", top: 80, right: 140, size: 50, opacity: 0.2 },
+        ]}
+      />
+
+      {/* Spacer で要素間スペーシング */}
+      <Slide title="スケジュール">
+        <Title />
+        <Spacer size="md" />
+        <Timeline
+          items={[
+            { time: "11:40", title: "羽田空港を出発", icon: "✈️", description: "ANA 091" },
+            { time: "15:05", title: "石垣空港に到着！", icon: "🌴" },
+            { time: "16:00", title: "ホテルへ", icon: "🏨" },
+          ]}
+        />
+      </Slide>
+
+      {/* Table でフライト情報 */}
+      <Slide title="フライト情報">
+        <Title />
+        <Spacer size="md" />
+        <Table
+          headers={["便名", "出発", "到着", "料金"]}
+          rows={[
+            ["ANA 091", "羽田 11:40", "石垣 15:05", "16,950円"],
+            ["ANA 092", "石垣 16:00", "羽田 18:35", "11,450円"],
+          ]}
+          striped
+        />
+      </Slide>
+
+      {/* Card でスポット紹介 */}
+      <Slide title="おすすめスポット">
+        <Title />
+        <Spacer size="md" />
+        <Grid cols={3}>
+          <Card icon="🍣" title="ひとし（本店）" description="石垣島No.1居酒屋。石垣牛の握りが絶品。" />
+          <Card icon="🏖️" title="川平湾" description="ミシュラン三ツ星の絶景ビーチ。" />
+          <Card icon="🛶" title="青の洞窟" description="シュノーケリングツアーで探検。" />
+        </Grid>
+      </Slide>
+
+      {/* BulletList に ReactNode + LinkTag */}
+      <Slide title="参考リンク">
+        <Title />
+        <Spacer size="sm" />
+        <BulletList
+          items={[
+            <>石垣島の天気: <LinkTag href="https://example.com">気象庁</LinkTag></>,
+            <>料金: <strong>1,700円</strong> → 事前予約で <strong>950円</strong>！</>,
+          ]}
+          icon="🌺"
+        />
+      </Slide>
+
+      {/* Checklist で持ち物リスト */}
+      <Slide title="持ち物チェックリスト">
+        <Title />
+        <Spacer size="md" />
+        <Grid cols={2}>
+          <Checklist title="👕 衣類" items={["半袖＋薄手の服", "水着", "サンダル"]} checked={[true, true, false]} />
+          <Checklist title="🧴 日用品" items={["日焼け止め", "虫よけスプレー"]} />
+        </Grid>
+      </Slide>
+
+      {/* Image コンポーネント */}
+      <Slide title="川平湾の絶景">
+        <Title />
+        <Spacer size="md" />
+        <Image src="/photos/kabira-bay.jpg" alt="川平湾" width={400} height={250} radius="lg" caption="ミシュラン三ツ星の絶景" />
+      </Slide>
+
+      {/* CodeBlock シンタックスハイライト */}
+      <Slide title="予約スクリプト">
+        <Title />
+        <Spacer size="sm" />
+        <CodeBlock lang="ts">{`const booking = await fetch("/api/reserve", {
+  method: "POST",
+  body: JSON.stringify({ date: "2026-07-01" }),
+});`}</CodeBlock>
+      </Slide>
+
+      {/* Slide decorations で背景デコレーション */}
+      <Slide
+        gradient="linear-gradient(135deg, #0077B6, #48CAE4)"
+        decorations={[
+          { emoji: "🐠", top: 40, right: 60, size: 60, opacity: 0.2 },
+          { emoji: "🐚", bottom: 50, left: 80, size: 40, opacity: 0.15 },
+        ]}
+      >
+        <Title size="xxl" color="#fff">海の世界へ</Title>
+      </Slide>
+
+      {/* ThankYouSlide: カスタムグラデーション + デコレーション */}
+      <ThankYouSlide
+        title={<>ありがとう！ 🌴</>}
+        subtitle="素敵な旅になりますように"
+        gradient="linear-gradient(135deg, #0077B6, #90E0EF)"
+        decorations={[{ emoji: "🌺", top: 40, left: 60, size: 60, opacity: 0.2 }]}
+      />
+    </Deck>
+  );
+}
+```
+
 ## エクスポート一覧
 
 ```typescript
@@ -224,7 +369,10 @@ function MyPresentation() {
 export { Deck, Slide, Split, Grid, SLIDE_W, SLIDE_H }
 
 // Content
-export { Title, Subtitle, Body, Badge, BulletList, Quote, CodeBlock, StatCard }
+export { Spacer, Title, Subtitle, Body, Badge, BulletList, Quote, CodeBlock, StatCard }
+
+// New Components
+export { Card, Image, Timeline, Table, LinkTag, Checklist }
 
 // Charts
 export { BarChart, HorizontalBarChart, GroupedBarChart, LineChart, AreaChart,
@@ -240,9 +388,12 @@ export { themes, GOOGLE_FONTS_URL, useTheme, ThemeContext, useContainerScale }
 export { SlideContext, useSlideContext, DeckContext, useAgendaItems }
 
 // Types（すべてのprops型をエクスポート）
-export type { SlideTheme, DeckProps, SlideProps, SplitProps, GridProps,
+export type { SlideTheme, DeckProps, SlideProps, SlideDecoration, SplitProps, GridProps,
+             SpacerProps, SpacerSize,
              TitleProps, TitleSize, SubtitleProps, BodyProps, BadgeProps,
              BulletListProps, QuoteProps, CodeBlockProps, StatCardProps,
+             CardProps, ImageProps, TimelineProps, TimelineItemData,
+             TableProps, LinkTagProps, ChecklistProps,
              ChartDataPoint, LineSeries, ScatterSeries, GroupedBarGroup,
              BarChartProps, HorizontalBarChartProps, GroupedBarChartProps,
              LineChartProps, AreaChartProps, DonutChartProps, ScatterPlotProps,
