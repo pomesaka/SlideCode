@@ -2,6 +2,31 @@ import { type ReactNode } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useAgendaItems } from "../hooks/useDeckContext";
 import { SLIDE_W, SLIDE_H } from "../components/Deck";
+import type { SlideDecoration } from "../components/Slide";
+
+/** テンプレート共通: デコレーション描画ヘルパー */
+function renderDecorations(decorations: SlideDecoration[]) {
+  return decorations.map((d, i) => (
+    <span
+      key={i}
+      style={{
+        position: "absolute",
+        top: d.top,
+        right: d.right,
+        bottom: d.bottom,
+        left: d.left,
+        fontSize: d.size ?? 40,
+        opacity: d.opacity ?? 0.3,
+        lineHeight: 1,
+        pointerEvents: "none",
+        userSelect: "none",
+        transform: d.rotate ? `rotate(${d.rotate}deg)` : undefined,
+      }}
+    >
+      {d.emoji}
+    </span>
+  ));
+}
 
 /* ── CoverSlide ── */
 
@@ -14,96 +39,120 @@ import { SLIDE_W, SLIDE_H } from "../components/Deck";
  *   date="2025-12-01"
  *   tag="Confidential"
  * />
+ * <CoverSlide
+ *   title={<>最高な沖縄<br /><span style={{ color: "#FFB703" }}>in 2026</span></>}
+ *   gradient="linear-gradient(135deg, #0077B6, #90E0EF)"
+ *   decorations={[{ emoji: "🏝️", top: 30, right: 50, size: 80, opacity: 0.3 }]}
+ * />
  */
 export interface CoverSlideProps {
-  title: string;
-  subtitle?: string;
+  /** タイトル。ReactNode を渡せるため、複数色や改行も可能 */
+  title: ReactNode;
+  subtitle?: ReactNode;
   author?: string;
   date?: string;
-  tag?: string;
+  tag?: ReactNode;
+  /** カスタムグラデーション（テーマデフォルトを上書き） */
+  gradient?: string;
+  /** 背景デコレーション */
+  decorations?: SlideDecoration[];
+  /** フッター領域のカスタムコンテンツ */
+  footer?: ReactNode;
 }
 
 /**
  * 表紙スライド。primary→secondary のグラデーション背景。
+ * title に ReactNode を渡すことで2色分けや改行も可能。
+ * gradient / decorations / footer で柔軟にカスタマイズできる。
  * AgendaSlide の自動収集対象外。
  * @example
  * <CoverSlide title="My Presentation" subtitle="概要" author="Author" />
  */
-export function CoverSlide({ title, subtitle, author, date, tag }: CoverSlideProps) {
+export function CoverSlide({ title, subtitle, author, date, tag, gradient, decorations, footer }: CoverSlideProps) {
   const theme = useTheme();
+  const bg = gradient ?? `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`;
 
   return (
     <div
       style={{
+        position: "relative",
         width: SLIDE_W,
         height: SLIDE_H,
-        background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
+        background: bg,
         padding: "48px 64px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
         boxSizing: "border-box",
         color: theme.textOnPrimary,
+        overflow: "hidden",
       }}
     >
-      {tag && (
-        <span
+      {decorations && renderDecorations(decorations)}
+      <div style={{ position: "relative" }}>
+        {tag && (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "4px 12px",
+              borderRadius: "999px",
+              background: theme.textOnPrimary + "20",
+              color: theme.textOnPrimary,
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.03em",
+              fontFamily: theme.fontBody,
+              marginBottom: 16,
+            }}
+          >
+            {tag}
+          </span>
+        )}
+        <div
           style={{
-            display: "inline-block",
-            padding: "4px 12px",
-            borderRadius: "999px",
-            background: theme.textOnPrimary + "20",
-            color: theme.textOnPrimary,
-            fontSize: 11,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.03em",
-            fontFamily: theme.fontBody,
-            marginBottom: 16,
-            alignSelf: "flex-start",
+            fontFamily: theme.fontDisplay,
+            fontSize: 48,
+            fontWeight: 700,
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
           }}
         >
-          {tag}
-        </span>
-      )}
-      <div
-        style={{
-          fontFamily: theme.fontDisplay,
-          fontSize: 48,
-          fontWeight: 700,
-          lineHeight: 1.1,
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {title}
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              fontSize: 18,
+              marginTop: 12,
+              opacity: 0.85,
+              fontFamily: theme.fontBody,
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+        {(author || date) && (
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              marginTop: 24,
+              fontSize: 13,
+              opacity: 0.7,
+              fontFamily: theme.fontBody,
+            }}
+          >
+            {author && <span>{author}</span>}
+            {date && <span>{date}</span>}
+          </div>
+        )}
+        {footer && (
+          <div style={{ marginTop: 16 }}>
+            {footer}
+          </div>
+        )}
       </div>
-      {subtitle && (
-        <div
-          style={{
-            fontSize: 18,
-            marginTop: 12,
-            opacity: 0.85,
-            fontFamily: theme.fontBody,
-          }}
-        >
-          {subtitle}
-        </div>
-      )}
-      {(author || date) && (
-        <div
-          style={{
-            display: "flex",
-            gap: 16,
-            marginTop: 24,
-            fontSize: 13,
-            opacity: 0.7,
-            fontFamily: theme.fontBody,
-          }}
-        >
-          {author && <span>{author}</span>}
-          {date && <span>{date}</span>}
-        </div>
-      )}
     </div>
   );
 }
@@ -193,16 +242,28 @@ export function SectionDivider({ title, subtitle, number }: SectionDividerProps)
 /**
  * @example
  * <ThankYouSlide subtitle="ご清聴ありがとうございました" contact="tanaka@example.com" />
+ * <ThankYouSlide
+ *   title={<>Thanks! <span style={{ opacity: 0.7 }}>🎉</span></>}
+ *   gradient="linear-gradient(135deg, #0077B6, #90E0EF)"
+ *   decorations={[{ emoji: "🌺", top: 40, left: 60, size: 60, opacity: 0.2 }]}
+ * />
  */
 export interface ThankYouSlideProps {
   /** @default "Thank You" */
-  title?: string;
-  subtitle?: string;
+  title?: ReactNode;
+  subtitle?: ReactNode;
   contact?: string;
+  /** カスタムグラデーション（テーマデフォルトを上書き） */
+  gradient?: string;
+  /** 背景デコレーション */
+  decorations?: SlideDecoration[];
+  /** フッター領域のカスタムコンテンツ */
+  footer?: ReactNode;
 }
 
 /**
  * 締めスライド。CoverSlide と同じグラデーション背景、中央揃え。
+ * title に ReactNode を渡すことで絵文字やカスタムスタイルも可能。
  * AgendaSlide の自動収集対象外。
  * @example
  * <ThankYouSlide
@@ -211,15 +272,17 @@ export interface ThankYouSlideProps {
  *   contact="hello@example.com"
  * />
  */
-export function ThankYouSlide({ title = "Thank You", subtitle, contact }: ThankYouSlideProps) {
+export function ThankYouSlide({ title = "Thank You", subtitle, contact, gradient, decorations, footer }: ThankYouSlideProps) {
   const theme = useTheme();
+  const bg = gradient ?? `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`;
 
   return (
     <div
       style={{
+        position: "relative",
         width: SLIDE_W,
         height: SLIDE_H,
-        background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
+        background: bg,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -227,43 +290,52 @@ export function ThankYouSlide({ title = "Thank You", subtitle, contact }: ThankY
         boxSizing: "border-box",
         color: theme.textOnPrimary,
         textAlign: "center",
+        overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          fontFamily: theme.fontDisplay,
-          fontSize: 48,
-          fontWeight: 700,
-          lineHeight: 1.1,
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {title}
+      {decorations && renderDecorations(decorations)}
+      <div style={{ position: "relative" }}>
+        <div
+          style={{
+            fontFamily: theme.fontDisplay,
+            fontSize: 48,
+            fontWeight: 700,
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              fontSize: 18,
+              marginTop: 12,
+              opacity: 0.85,
+              fontFamily: theme.fontBody,
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+        {contact && (
+          <div
+            style={{
+              fontSize: 14,
+              marginTop: 24,
+              opacity: 0.7,
+              fontFamily: theme.fontBody,
+            }}
+          >
+            {contact}
+          </div>
+        )}
+        {footer && (
+          <div style={{ marginTop: 16 }}>
+            {footer}
+          </div>
+        )}
       </div>
-      {subtitle && (
-        <div
-          style={{
-            fontSize: 18,
-            marginTop: 12,
-            opacity: 0.85,
-            fontFamily: theme.fontBody,
-          }}
-        >
-          {subtitle}
-        </div>
-      )}
-      {contact && (
-        <div
-          style={{
-            fontSize: 14,
-            marginTop: 24,
-            opacity: 0.7,
-            fontFamily: theme.fontBody,
-          }}
-        >
-          {contact}
-        </div>
-      )}
     </div>
   );
 }

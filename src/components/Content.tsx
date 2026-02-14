@@ -1,6 +1,40 @@
-import { type ReactNode } from "react";
+import { type ReactNode, type CSSProperties } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { useSlideContext } from "../hooks/useSlideContext";
+
+/* ── Spacer ── */
+
+export type SpacerSize = "xs" | "sm" | "md" | "lg" | "xl";
+
+const spacerSizeMap: Record<SpacerSize, number> = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+};
+
+/**
+ * @example
+ * <Spacer size="md" />
+ * <Spacer size={20} />
+ */
+export interface SpacerProps {
+  /** プリセットサイズまたはカスタム数値(px) @default "md" */
+  size?: SpacerSize | number;
+}
+
+/**
+ * 要素間のスペーシング。size にプリセット名または数値(px)を指定。
+ * @example
+ * <Title size="lg">見出し</Title>
+ * <Spacer size="md" />
+ * <BulletList items={["項目A", "項目B"]} />
+ */
+export function Spacer({ size = "md" }: SpacerProps) {
+  const h = typeof size === "number" ? size : spacerSizeMap[size];
+  return <div style={{ height: h, flexShrink: 0 }} />;
+}
 
 /* ── Title ── */
 
@@ -181,17 +215,21 @@ export function Badge({ children, color }: BadgeProps) {
  * @example
  * <BulletList items={["項目A", "項目B", "項目C"]} />
  * <BulletList items={["Done", "In Progress"]} icon="✓" />
+ * <BulletList items={[<>料金: <strong>1,700円</strong></>]} />
  */
 export interface BulletListProps {
-  items: string[];
+  /** 文字列またはReactNodeの配列 */
+  items: ReactNode[];
   /** @default "→" */
   icon?: string;
 }
 
 /**
  * アイコン付き箇条書きリスト。icon はテーマの accent カラーで表示。
+ * items には文字列のほか ReactNode も指定可能。
  * @example
  * <BulletList items={["React 18+", "TypeScript", "Vite"]} />
+ * <BulletList items={[<>詳細は <LinkTag href="...">公式サイト</LinkTag></>]} />
  */
 export function BulletList({ items, icon = "→" }: BulletListProps) {
   const theme = useTheme();
@@ -283,10 +321,133 @@ export function Quote({ children, author }: QuoteProps) {
 export interface CodeBlockProps {
   children: string;
   lang?: string;
+  /** シンタックスハイライトを無効にする @default false */
+  plain?: boolean;
+}
+
+/* ── Lightweight Syntax Highlighter ── */
+
+interface TokenRule {
+  pattern: RegExp;
+  type: string;
+}
+
+const HIGHLIGHT_RULES: Record<string, TokenRule[]> = (() => {
+  const jsComments: TokenRule[] = [
+    { pattern: /\/\/[^\n]*/, type: "comment" },
+    { pattern: /\/\*[\s\S]*?\*\//, type: "comment" },
+  ];
+  const strings: TokenRule[] = [
+    { pattern: /`(?:[^`\\]|\\.)*`/, type: "string" },
+    { pattern: /"(?:[^"\\]|\\.)*"/, type: "string" },
+    { pattern: /'(?:[^'\\]|\\.)*'/, type: "string" },
+  ];
+  const numbers: TokenRule[] = [
+    { pattern: /\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/, type: "number" },
+  ];
+
+  const jsKeywords = /\b(?:const|let|var|function|return|if|else|for|while|class|import|export|from|default|new|this|typeof|async|await|try|catch|throw|switch|case|break|continue|of|in|yield)\b/;
+  const tsKeywords = /\b(?:const|let|var|function|return|if|else|for|while|class|import|export|from|default|new|this|typeof|async|await|try|catch|throw|switch|case|break|continue|of|in|yield|type|interface|enum|namespace|declare|as|is|keyof|readonly|implements|extends|abstract|private|protected|public|static|override)\b/;
+  const pyKeywords = /\b(?:def|class|return|if|elif|else|for|while|import|from|as|with|try|except|raise|finally|pass|break|continue|yield|lambda|in|not|and|or|is|True|False|None|self|async|await|nonlocal|global)\b/;
+  const jsBuiltins = /\b(?:console|Array|Object|String|Number|Boolean|Promise|Map|Set|null|undefined|true|false|NaN|Infinity)\b/;
+  const tsBuiltins = /\b(?:console|Array|Object|String|Number|Boolean|Promise|Map|Set|null|undefined|true|false|NaN|Infinity|void|never|any|unknown|string|number|boolean|bigint|symbol|object|Record|Partial|Required|Omit|Pick|Exclude|Extract|ReturnType|Parameters)\b/;
+  const pyBuiltins = /\b(?:print|len|range|list|dict|set|tuple|int|float|str|bool|type|isinstance|hasattr|getattr|setattr|super|property|staticmethod|classmethod|enumerate|zip|map|filter|sorted|reversed|any|all|min|max|sum|abs|round|open|input)\b/;
+
+  const jsRules: TokenRule[] = [
+    ...jsComments, ...strings, ...numbers,
+    { pattern: jsKeywords, type: "keyword" },
+    { pattern: jsBuiltins, type: "builtin" },
+    { pattern: /(?:=>)/, type: "keyword" },
+  ];
+
+  const tsRules: TokenRule[] = [
+    ...jsComments, ...strings, ...numbers,
+    { pattern: tsKeywords, type: "keyword" },
+    { pattern: tsBuiltins, type: "builtin" },
+    { pattern: /(?:=>)/, type: "keyword" },
+    { pattern: /<[A-Z]\w*>/, type: "builtin" },
+  ];
+
+  const pyRules: TokenRule[] = [
+    { pattern: /#[^\n]*/, type: "comment" },
+    ...strings, ...numbers,
+    { pattern: pyKeywords, type: "keyword" },
+    { pattern: pyBuiltins, type: "builtin" },
+    { pattern: /@\w+/, type: "keyword" },
+  ];
+
+  const jsonRules: TokenRule[] = [
+    ...strings, ...numbers,
+    { pattern: /\b(?:true|false|null)\b/, type: "keyword" },
+  ];
+
+  const htmlRules: TokenRule[] = [
+    { pattern: /<!--[\s\S]*?-->/, type: "comment" },
+    ...strings,
+    { pattern: /<\/?[a-zA-Z][\w-]*/, type: "keyword" },
+    { pattern: /\b[a-zA-Z-]+(?==)/, type: "builtin" },
+  ];
+
+  const cssRules: TokenRule[] = [
+    { pattern: /\/\*[\s\S]*?\*\//, type: "comment" },
+    ...strings, ...numbers,
+    { pattern: /[.#][\w-]+/, type: "keyword" },
+    { pattern: /\b[\w-]+(?=\s*:)/, type: "builtin" },
+    { pattern: /:\s*[\w-]+/, type: "string" },
+  ];
+
+  return {
+    js: jsRules, javascript: jsRules, jsx: jsRules,
+    ts: tsRules, typescript: tsRules, tsx: tsRules,
+    py: pyRules, python: pyRules,
+    json: jsonRules,
+    html: htmlRules, xml: htmlRules, svg: htmlRules,
+    css: cssRules, scss: cssRules,
+  };
+})();
+
+function tokenize(code: string, lang: string): Array<{ text: string; type: string }> {
+  const rules = HIGHLIGHT_RULES[lang.toLowerCase()];
+  if (!rules) return [{ text: code, type: "plain" }];
+
+  const tokens: Array<{ text: string; type: string }> = [];
+  let remaining = code;
+
+  while (remaining.length > 0) {
+    let earliest = { index: remaining.length, length: 0, type: "plain" };
+    for (const rule of rules) {
+      const m = remaining.match(rule.pattern);
+      if (m && m.index !== undefined && m.index < earliest.index) {
+        earliest = { index: m.index, length: m[0].length, type: rule.type };
+      }
+    }
+    if (earliest.index > 0) {
+      tokens.push({ text: remaining.slice(0, earliest.index), type: "plain" });
+    }
+    if (earliest.length > 0) {
+      tokens.push({ text: remaining.slice(earliest.index, earliest.index + earliest.length), type: earliest.type });
+      remaining = remaining.slice(earliest.index + earliest.length);
+    } else {
+      break;
+    }
+  }
+  return tokens;
+}
+
+function getTokenColor(type: string, theme: { primary: string; accent: string; textMuted: string; text: string }): string {
+  switch (type) {
+    case "keyword": return theme.accent;
+    case "string": return theme.primary;
+    case "comment": return theme.textMuted;
+    case "number": return theme.accent;
+    case "builtin": return theme.primary;
+    default: return theme.text;
+  }
 }
 
 /**
  * コードブロック。JetBrains Mono / Fira Code、13px、右上に言語ラベル表示。
+ * lang を指定するとシンタックスハイライト（JS/TS, Python, JSON, HTML, CSS対応）。
  * @example
  * <CodeBlock lang="tsx">
  * {`function Hello() {
@@ -294,8 +455,10 @@ export interface CodeBlockProps {
  * }`}
  * </CodeBlock>
  */
-export function CodeBlock({ children, lang }: CodeBlockProps) {
+export function CodeBlock({ children, lang, plain }: CodeBlockProps) {
   const theme = useTheme();
+  const shouldHighlight = !plain && lang && HIGHLIGHT_RULES[lang.toLowerCase()];
+
   return (
     <div
       style={{
@@ -327,7 +490,13 @@ export function CodeBlock({ children, lang }: CodeBlockProps) {
           {lang}
         </span>
       )}
-      {children}
+      {shouldHighlight
+        ? tokenize(children, lang).map((tok, i) => (
+            <span key={i} style={{ color: getTokenColor(tok.type, theme) }}>
+              {tok.text}
+            </span>
+          ))
+        : children}
     </div>
   );
 }
