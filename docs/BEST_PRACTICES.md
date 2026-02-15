@@ -258,21 +258,42 @@ SlideCode の内部解像度は 960×540px です。以下のガイドライン�
 </Slide>
 ```
 
-### 4-2. カラーの機能的な使用
+### 4-2. セマンティックカラー
 
-色は**装飾ではなく意味**を持たせてください。
+色は**装飾ではなく意味**を持たせてください。SlideCode のテーマにはセマンティックカラーが組み込まれており、利用者が色を意識せずにベストプラクティスに沿えるようになっています。
 
-| 色の用途 | 意味 | 使用場面 |
+| テーマ値 | 意味 | 自動適用されるコンポーネント |
 |---|---|---|
-| テーマの `accent` | 注目・強調 | 重要な数値、CTA |
-| `#22C55E`（緑） | ポジティブ・増加 | 前年比増、達成 |
-| `#EF4444`（赤） | ネガティブ・減少 | 前年比減、問題 |
-| テーマの `textMuted` | 補助情報 | 注釈、出典 |
+| `accent` | 注目・強調 | `Badge`, `Callout(insight)`, `BulletList` icon |
+| `positive` | ポジティブ（成長・達成） | `StatCard` change(+), `Callout(positive)`, `WaterfallChart` 正値 |
+| `negative` | ネガティブ（減少・問題） | `StatCard` change(-), `Callout(warning)`, `WaterfallChart` 負値 |
+| `textMuted` | 補助情報 | `Subtitle`, `Footnote`, チャートラベル |
+
+各テーマは色調に合わせた positive/negative カラーを持っています:
+
+| テーマ | positive | negative |
+|---|---|---|
+| `corporate` | `#22C55E` | `#EF4444` |
+| `startup` | `#4ADE80` | `#FB7185` |
+| `minimal` | `#059669` | `#DC2626` |
+| `nature` | `#5B8A72` | `#C75050` |
 
 ```tsx
-// StatCard は change prop の先頭文字で色を自動判定
-<StatCard value="$1.2M" label="売上" change="+23%" />   {/* 緑↑ で表示 */}
-<StatCard value="$800K" label="コスト" change="-5%" />   {/* 赤↓ で表示 */}
+// StatCard は change prop の先頭文字でテーマの positive/negative 色を自動適用
+<StatCard value="$1.2M" label="売上" change="+23%" />   {/* theme.positive で表示 */}
+<StatCard value="$800K" label="コスト" change="-5%" />   {/* theme.negative で表示 */}
+
+// Callout も variant でセマンティックカラーを自動適用
+<Callout variant="positive" icon="✅">目標達成</Callout>  {/* theme.positive */}
+<Callout variant="warning" icon="⚠️">リスク</Callout>     {/* theme.negative */}
+
+// WaterfallChart は正値/負値で自動色分け
+<WaterfallChart data={[
+  { label: "Q3", value: 1000, isTotal: true },
+  { label: "増加", value: 300 },     {/* theme.positive */}
+  { label: "減少", value: -200 },    {/* theme.negative */}
+  { label: "Q4", value: 0, isTotal: true },
+]} />
 ```
 
 ### 4-3. アクセシビリティ
@@ -701,7 +722,8 @@ Before/After、競合比較など。
 | 余白の確保 | `<Spacer>`, Slide のデフォルト padding |
 | 整列・グリッド | `<Grid>`, `<Split>` |
 | コンテンツグループ化 | `<Card>`, セクション内のレイアウト |
-| KPI 強調 | `<StatCard>` 増減の自動カラーリング |
+| セマンティックカラー | テーマの `positive` / `negative` が全コンポーネントに自動適用 |
+| KPI 強調 | `<StatCard>` 増減のテーマカラー自動適用 |
 | インライントレンド | `<Sparkline>` テキスト内埋め込み |
 | 出典表記 | `<Footnote>` スライド下部に自動配置 |
 | キーインサイト強調 | `<Callout>` So What? を明示 |

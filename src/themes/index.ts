@@ -5,6 +5,10 @@ export interface SlideTheme {
   primary: string;
   secondary: string;
   accent: string;
+  /** ポジティブ値（成長・達成・改善）を示す色 */
+  positive: string;
+  /** ネガティブ値（減少・問題・リスク）を示す色 */
+  negative: string;
   text: string;
   textMuted: string;
   textOnPrimary: string;
@@ -21,6 +25,8 @@ const corporate: SlideTheme = {
   primary: "#1B2A4A",
   secondary: "#3D6098",
   accent: "#E8913A",
+  positive: "#22C55E",
+  negative: "#EF4444",
   text: "#1B2A4A",
   textMuted: "#6B7280",
   textOnPrimary: "#FFFFFF",
@@ -37,6 +43,8 @@ const startup: SlideTheme = {
   primary: "#C8FF00",
   secondary: "#8B5CF6",
   accent: "#FF6B6B",
+  positive: "#4ADE80",
+  negative: "#FB7185",
   text: "#F0F0F0",
   textMuted: "#888888",
   textOnPrimary: "#0A0A0A",
@@ -53,6 +61,8 @@ const minimal: SlideTheme = {
   primary: "#1A1A1A",
   secondary: "#6B6B6B",
   accent: "#D4432F",
+  positive: "#059669",
+  negative: "#DC2626",
   text: "#1A1A1A",
   textMuted: "#999999",
   textOnPrimary: "#FAF9F7",
@@ -69,6 +79,8 @@ const nature: SlideTheme = {
   primary: "#2D4A3E",
   secondary: "#5B8A72",
   accent: "#C77B4A",
+  positive: "#5B8A72",
+  negative: "#C75050",
   text: "#2D4A3E",
   textMuted: "#7A8B7E",
   textOnPrimary: "#F0EBE3",

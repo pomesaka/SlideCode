@@ -97,6 +97,8 @@ interface SlideTheme {
   primary: string;
   secondary: string;
   accent: string;
+  positive: string;   // ポジティブ値（成長・達成）の色
+  negative: string;   // ネガティブ値（減少・問題）の色
   text: string;
   textMuted: string;
   textOnPrimary: string;

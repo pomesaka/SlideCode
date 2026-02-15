@@ -19,18 +19,13 @@ export interface CalloutProps {
   /**
    * スタイルバリアント
    * - "insight": テーマの accent 色（デフォルト、重要な洞察）
-   * - "positive": 緑（ポジティブな結果・成果）
-   * - "warning": 赤（警告・リスク）
+   * - "positive": テーマの positive 色（ポジティブな結果・成果）
+   * - "warning": テーマの negative 色（警告・リスク）
    * - "neutral": テーマの primary 色（一般的な補足）
    * @default "insight"
    */
   variant?: "insight" | "positive" | "warning" | "neutral";
 }
-
-const variantColors: Record<string, string> = {
-  positive: "#22C55E",
-  warning: "#EF4444",
-};
 
 /**
  * キーインサイト・テイクアウェイの強調ボックス。
@@ -49,10 +44,13 @@ const variantColors: Record<string, string> = {
 export function Callout({ children, icon, title, variant = "insight" }: CalloutProps) {
   const theme = useTheme();
 
-  const borderColor =
-    variant === "neutral"
-      ? theme.primary
-      : variantColors[variant] ?? theme.accent;
+  const variantColorMap: Record<string, string> = {
+    positive: theme.positive,
+    warning: theme.negative,
+    neutral: theme.primary,
+  };
+
+  const borderColor = variantColorMap[variant] ?? theme.accent;
 
   return (
     <div

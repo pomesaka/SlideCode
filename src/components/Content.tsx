@@ -529,7 +529,7 @@ export interface StatCardProps {
 export function StatCard({ value, label, change, icon, compact }: StatCardProps) {
   const theme = useTheme();
   const isNegative = change?.startsWith("-");
-  const changeColor = isNegative ? "#EF4444" : "#22C55E";
+  const changeColor = isNegative ? theme.negative : theme.positive;
   const changeArrow = isNegative ? "↓" : "↑";
 
   return (

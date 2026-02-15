@@ -656,7 +656,7 @@ export interface WaterfallChartProps {
   showValues?: boolean;
   /** 正の値の色 @default テーマの chartColors[0] */
   positiveColor?: string;
-  /** 負の値の色 @default "#EF4444" */
+  /** 負の値の色 @default テーマの negative */
   negativeColor?: string;
   /** 合計バーの色 @default テーマの primary */
   totalColor?: string;
@@ -681,11 +681,12 @@ export function WaterfallChart({
   height = 200,
   showValues = true,
   positiveColor,
-  negativeColor = "#EF4444",
+  negativeColor,
   totalColor,
 }: WaterfallChartProps) {
   const theme = useTheme();
-  const posColor = positiveColor ?? theme.chartColors[0];
+  const posColor = positiveColor ?? theme.positive;
+  const negColor = negativeColor ?? theme.negative;
   const totColor = totalColor ?? theme.primary;
 
   // Calculate running totals
@@ -722,7 +723,7 @@ export function WaterfallChart({
         end: running,
         value: item.value,
         isTotal: false,
-        color: item.color ?? (item.value >= 0 ? posColor : negativeColor),
+        color: item.color ?? (item.value >= 0 ? posColor : negColor),
       });
     }
   }
