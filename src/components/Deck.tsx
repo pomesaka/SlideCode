@@ -16,6 +16,13 @@ import { DeckContext, type AgendaItem } from "../hooks/useDeckContext";
 export const SLIDE_W = 960;
 export const SLIDE_H = 540;
 
+/**
+ * @example
+ * <Deck theme="corporate" maxWidth={1000} padding="24px 16px">
+ *   <CoverSlide title="My Talk" />
+ *   <Slide title="Section 1"><Title /><Body>...</Body></Slide>
+ * </Deck>
+ */
 export interface DeckProps {
   children: ReactNode;
   /**
@@ -25,6 +32,18 @@ export interface DeckProps {
   theme?: string | SlideTheme;
   /** スライド切り替え時に呼ばれるコールバック。 */
   onSlideChange?: (index: number) => void;
+  /**
+   * Deck 外枠の最大幅（px）。指定するとラッパー div が不要になる。
+   * @example
+   * <Deck maxWidth={1000}>...</Deck>
+   */
+  maxWidth?: number;
+  /**
+   * Deck 外枠のパディング。指定するとラッパー div が不要になる。
+   * @example
+   * <Deck padding="24px 16px">...</Deck>
+   */
+  padding?: string;
 }
 
 /** Component names excluded from auto-generated agenda items. */
@@ -66,7 +85,7 @@ function collectAgendaItems(nodes: ReturnType<typeof Children.toArray>): AgendaI
  *   <ThankYouSlide />
  * </Deck>
  */
-export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps) {
+export function Deck({ children, theme = "corporate", onSlideChange, maxWidth, padding }: DeckProps) {
   const slides = Children.toArray(children);
   const total = slides.length;
   const [current, setCurrent] = useState(0);
@@ -132,7 +151,7 @@ export function Deck({ children, theme = "corporate", onSlideChange }: DeckProps
     <DeckContext.Provider value={agendaItems}>
       <div
         ref={containerRef}
-        style={{ maxWidth: SLIDE_W, margin: "0 auto", fontFamily: resolvedTheme.fontBody, overflow: "hidden" }}
+        style={{ maxWidth: maxWidth ?? SLIDE_W, margin: "0 auto", padding, fontFamily: resolvedTheme.fontBody, overflow: "hidden" }}
       >
         <div
           style={{

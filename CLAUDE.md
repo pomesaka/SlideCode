@@ -57,7 +57,7 @@ src/
   charts/
     index.tsx           # 全チャートコンポーネント
   templates/
-    index.tsx           # CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, TeamSlide
+    index.tsx           # CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, ComparisonSlide, TeamSlide
 ```
 
 ## アーキテクチャ
@@ -130,6 +130,8 @@ interface SlideTheme {
 - ドットインジケーター（20枚以下はドット、超える場合は「n / total」テキスト）
 - Prev / Next ボタン（端で disabled）
 - `onSlideChange(index: number)` コールバック
+- **`maxWidth?: number`** — 外枠の最大幅（px）。指定するとラッパー div が不要になる
+- **`padding?: string`** — 外枠のパディング。指定するとラッパー div が不要になる
 - **children内の `title` propを持つスライドを自動スキャンし、`DeckContext` で `AgendaItem[]` を配信**
 
 ### Slide
@@ -152,19 +154,19 @@ interface SlideTheme {
 - **BulletList**: `items: ReactNode[]`, `icon: string`(デフォルト "→")、accent色アイコン。**items にリンクや太字を含む ReactNode も指定可能**
 - **Quote**: 左ボーダー（accent色、3px）、fontDisplay 22px italic
 - **CodeBlock**: JetBrains Mono / Fira Code、13px、`lang` prop。**`lang` 指定時にシンタックスハイライト対応（JS/TS, Python, JSON, HTML, CSS）**。`plain` propでハイライト無効化可能
-- **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), sentiment("positive"/"negative"でchange色を上書き), icon, compact
+- **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), sentiment("positive"/"negative"でchange色を上書き), icon, compact。**推奨使用場面**: KPI・数値ハイライト（"9.8兆円"、"85%"などの数値を大きく強調したいとき）。Grid + StatCard でダッシュボード的な表示に最適
 
 ### 新規コンポーネント
 
-- **Card**: 汎用カード。`icon`, `title`(必須), `description`, `image`, `bg`, `children`。テーマのsurface/radius使用
+- **Card**: 汎用カード。`icon`, `title`(必須), `description`(`ReactNode`対応), `image`, `bg`, `children`。テーマのsurface/radius使用。`description` に `LinkTag` や太字を含む `ReactNode` を渡せるため、`children` で `<Body size="sm">` をラップする必要がなくなった
 - **Image**: 画像コンポーネント。`src`, `alt`(必須), `width`, `height`, `radius`(none/sm/md/lg/full), `objectFit`, `caption`
 - **Timeline**: タイムライン表示。`items: { time, title, icon?, description? }[]`, `compact`。accent/primaryカラーでライン描画
 - **Table**: テーブル表示。`headers?: ReactNode[]`, `rows: ReactNode[][]`(必須), `striped`, `compact`。テーマのfontBody/surface/text使用
 - **LinkTag**: 外部リンク用ピル型タグ。`href`, `children`(必須), `target`(デフォルト `"_blank"`), `color`。`rel="noopener noreferrer"` 自動付与
 - **Checklist**: チェックリスト。`items: ReactNode[]`(必須), `title?`, `checked?: boolean[]`。accent色チェックマーク
-- **Footnote**: 出典・注釈コンポーネント。`children: ReactNode`。`marginTop: "auto"` でスライド下部に自動配置。10px、textMuted色。データの信頼性担保のため全データスライドでの使用を推奨
-- **Callout**: キーインサイト強調ボックス。`children`(必須), `icon?`, `title?`, `variant`: "insight"(デフォルト/accent色)/"positive"(緑)/"warning"(赤)/"neutral"(primary色)。左ボーダー + 薄い背景色。スライドの「So What?」を明示するために使用
-- **Divider**: スライド内の視覚的区切り線。`spacing`: sm(8px)/md(16px)/lg(24px)、`color?`。primary + 透過の 1px ライン
+- **Footnote**: 出典・注釈コンポーネント。`children: ReactNode`。`marginTop: "auto"` でスライド下部に自動配置。10px、textMuted色。**推奨使用場面**: データを含むすべてのスライドに出典として使用
+- **Callout**: キーインサイト強調ボックス。`children`(必須), `icon?`, `title?`, `variant`: "insight"(デフォルト/accent色)/"positive"(緑)/"warning"(赤)/"neutral"(primary色)。左ボーダー + 薄い背景色。**推奨使用場面**: スライドの「So What?」（＝だから何が言えるか）を明示するとき。予測・提言・重要示唆の強調に最適。`Quote` とは異なり、自分の分析から導いた結論やアクションを示す場面で使用する（`Quote` は他者の発言や外部引用を示す場合に使う）
+- **Divider**: スライド内の視覚的区切り線。`spacing`: sm(8px)/md(16px)/lg(24px)、`color?`。primary + 透過の 1px ライン。**推奨使用場面**: 同一スライド内でセクションを視覚的に分離するとき
 
 ### チャートコンポーネント
 
@@ -195,6 +197,7 @@ interface SlideTheme {
 - **AgendaSlide**: surfaceカード表示
   - **`items` は省略可能** — 省略時は `DeckContext` から自動生成（Deck内の `title` を持つSlide/SectionDividerから収集）
   - 手動指定: `items: Array<{number, title, description?}>`
+- **ComparisonSlide**: Before/After 比較スライド。`title`(必須), `left: ComparisonSide`, `right: ComparisonSide`。各サイドは `{ icon?, title, items: ReactNode[], bulletIcon? }`。Split + Card + BulletList の頻出パターンを1コンポーネントに集約。AgendaSlide 自動収集対象
 - **TeamSlide**: members: Array<{name, role, avatar?}>、イニシャルアバター(chartColors使用)
 
 ## 使用例
@@ -207,7 +210,8 @@ import { Deck, Slide, Title, Body, AgendaSlide, CoverSlide,
 
 function MyPresentation() {
   return (
-    <Deck theme="corporate">
+    // maxWidth / padding で外側ラッパー不要
+    <Deck theme="corporate" maxWidth={1000} padding="24px 16px">
       {/* CoverSlide → agenda対象外 */}
       <CoverSlide title="Q4 Report" subtitle="2025年度" author="田中太郎" />
 
@@ -249,6 +253,47 @@ function MyPresentation() {
     { number: 2, title: "今後の計画", description: "来期の戦略" },
   ]}
 />
+```
+
+### ComparisonSlide（Before/After 比較）
+
+```tsx
+import { ComparisonSlide } from "slidecode";
+
+<ComparisonSlide
+  title="開発者の役割が根本から変わる"
+  left={{ icon: "📝", title: "従来（〜2025）", items: ["自分でコードを書く", "手動テスト & デバッグ", "ドキュメントを手書き"] }}
+  right={{ icon: "🚀", title: "これから（2026〜）", items: ["AI 出力のレビュー・調整", "アーキテクチャ設計に集中", "AI にドキュメント生成を委任"] }}
+/>
+```
+
+### Card の description に ReactNode を使用
+
+```tsx
+import { Card, LinkTag } from "slidecode";
+
+{/* description に LinkTag や太字を含めることが可能 */}
+<Card icon="🔄" title="レガシーモダナイゼーション"
+  description={<><LinkTag href="https://example.com">9.8兆円の DX 市場</LinkTag>。AI による仕様書自動生成で刷新コストを大幅に圧縮。</>}
+/>
+
+{/* 従来通り文字列も使える */}
+<Card icon="🤖" title="AI 導入コンサルティング"
+  description="顧客企業の AI 活用を伴走支援。ツール選定からガバナンス設計まで。" />
+```
+
+### Callout vs Quote の使い分け
+
+```tsx
+import { Callout, Quote } from "slidecode";
+
+{/* Callout: 自分の分析・提言・So What? の明示 */}
+<Callout icon="💡" title="So What?">
+  プレミアムへのアップグレード促進が最もROIの高い施策
+</Callout>
+
+{/* Quote: 他者の発言や外部の引用 */}
+<Quote>「2030年までに80%の組織がAIを活用する」— Gartner</Quote>
 ```
 
 ### 新コンポーネント使用例
@@ -393,7 +438,7 @@ export { BarChart, HorizontalBarChart, GroupedBarChart, LineChart, AreaChart,
          WaterfallChart }
 
 // Templates
-export { CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, TeamSlide }
+export { CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, ComparisonSlide, TeamSlide }
 
 // Theme
 export { themes, GOOGLE_FONTS_URL, useTheme, ThemeContext, useContainerScale }
@@ -414,7 +459,8 @@ export type { SlideTheme, DeckProps, SlideProps, SlideDecoration, SplitProps, Gr
              LineChartProps, AreaChartProps, DonutChartProps, ScatterPlotProps,
              SparklineProps, ProgressRingProps, ProgressBarProps, WaterfallChartProps,
              CoverSlideProps, SectionDividerProps, ThankYouSlideProps,
-             AgendaSlideProps, TeamSlideProps, TeamMember,
+             AgendaSlideProps, ComparisonSlideProps, ComparisonSide,
+             TeamSlideProps, TeamMember,
              SlideMetadata, AgendaItem }
 ```
 

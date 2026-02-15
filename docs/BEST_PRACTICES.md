@@ -625,9 +625,17 @@ Edward Tufte が提唱した「データ集約的でデザインシンプルな�
 
 ### 8-5. 比較スライド
 
-Before/After、競合比較など。
+Before/After、競合比較など。`ComparisonSlide` テンプレートを使うと簡潔に記述できる。
 
 ```tsx
+{/* ComparisonSlide テンプレート（推奨） */}
+<ComparisonSlide
+  title="新デザインによりCVRが2.1倍に改善した"
+  left={{ icon: "📉", title: "Before", items: ["複雑な導線", "CTA不明確", "フォーム離脱率40%"] }}
+  right={{ icon: "📈", title: "After", items: ["3ステップで完了", "CTA明確化", "フォーム離脱率15%"] }}
+/>
+
+{/* より細かいカスタマイズが必要な場合は Split + Card を直接組み合わせる */}
 <Slide title="新デザインによりCVRが2.1倍に改善した">
   <Title />
   <Spacer size="md" />
@@ -734,6 +742,7 @@ Before/After、競合比較など。
 | セクション内区切り | `<Divider>` 視覚的な分離 |
 | セクション遷移 | `<SectionDivider>` 番号付き区切り |
 | 増減のブリッジ分析 | `<WaterfallChart>` 売上ブリッジ・差異分析 |
+| Before/After 比較 | `<ComparisonSlide>` テンプレート |
 | チェックリスト / 進捗 | `<Checklist>`, `<ProgressBar>`, `<ProgressRing>` |
 
 ### チャート選択クイックリファレンス

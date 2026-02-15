@@ -485,6 +485,130 @@ export function AgendaSlide({ title = "Agenda", items }: AgendaSlideProps) {
   );
 }
 
+/* ── ComparisonSlide ── */
+
+/** ComparisonSlide の左右パネル用データ */
+export interface ComparisonSide {
+  /** パネル上部のアイコン */
+  icon?: string;
+  /** パネルのタイトル（必須） */
+  title: string;
+  /** 箇条書きアイテム */
+  items: ReactNode[];
+  /** 箇条書きアイコン。@default 左側 "•" / 右側 "→" */
+  bulletIcon?: string;
+}
+
+/**
+ * Before/After や 旧/新 の比較テンプレートスライド。
+ * Split + Card + BulletList のよくあるパターンを1コンポーネントに集約。
+ * @example
+ * <ComparisonSlide
+ *   title="開発者の役割が根本から変わる"
+ *   left={{ icon: "📝", title: "従来（〜2025）", items: ["自分でコードを書く", "手動テスト"] }}
+ *   right={{ icon: "🚀", title: "これから（2026〜）", items: ["AI 出力のレビュー", "設計に集中"] }}
+ * />
+ */
+export interface ComparisonSlideProps {
+  /** スライドのタイトル（AgendaSlide 自動収集の対象） */
+  title: string;
+  /** スライドの説明メタデータ */
+  description?: string;
+  /** 左側パネル（Before / 従来） */
+  left: ComparisonSide;
+  /** 右側パネル（After / これから） */
+  right: ComparisonSide;
+}
+
+/**
+ * Before/After 比較スライド。ビジネスプレゼンで頻出する左右比較パターンをテンプレート化。
+ * AgendaSlide の自動収集対象（title prop あり）。
+ * @example
+ * <ComparisonSlide
+ *   title="新デザインでCVRが2.1倍に改善"
+ *   left={{ icon: "📉", title: "Before", items: ["複雑な導線", "CTA不明確"] }}
+ *   right={{ icon: "📈", title: "After", items: ["3ステップで完了", "CTA明確化"] }}
+ * />
+ */
+export function ComparisonSlide({ title, left, right }: ComparisonSlideProps) {
+  const theme = useTheme();
+
+  const renderSide = (side: ComparisonSide, defaultIcon: string) => (
+    <div
+      style={{
+        background: theme.surface,
+        borderRadius: theme.radius,
+        padding: 20,
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        height: "100%",
+        boxSizing: "border-box",
+      }}
+    >
+      {side.icon && <div style={{ fontSize: 28, lineHeight: 1 }}>{side.icon}</div>}
+      <div
+        style={{
+          fontFamily: theme.fontBody,
+          fontSize: 15,
+          fontWeight: 600,
+          color: theme.text,
+        }}
+      >
+        {side.title}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+        {side.items.map((item, i) => (
+          <div key={i} style={{ display: "flex", gap: 8, fontSize: 12, lineHeight: 1.5, fontFamily: theme.fontBody }}>
+            <span style={{ color: theme.accent, flexShrink: 0 }}>{side.bulletIcon ?? defaultIcon}</span>
+            <span style={{ color: theme.text }}>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        width: SLIDE_W,
+        height: SLIDE_H,
+        background: theme.bg,
+        padding: "48px 64px",
+        display: "flex",
+        flexDirection: "column",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: theme.fontDisplay,
+          fontSize: 26,
+          fontWeight: 700,
+          color: theme.text,
+          marginBottom: 24,
+          letterSpacing: "-0.02em",
+          lineHeight: 1.2,
+        }}
+      >
+        {title}
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 24,
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
+        {renderSide(left, "•")}
+        {renderSide(right, "→")}
+      </div>
+    </div>
+  );
+}
+
 /* ── TeamSlide ── */
 
 /**
