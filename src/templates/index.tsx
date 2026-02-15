@@ -366,11 +366,26 @@ export interface AgendaSlideProps {
 
 /**
  * 目次スライド。items を省略すると Deck 内のスライドから自動生成する。
+ * 項目が6つ以上の場合は2カラム grid レイアウトに自動切り替えし、
+ * スライド内に収まるようコンパクト表示になる。
  */
 export function AgendaSlide({ title = "Agenda", items }: AgendaSlideProps) {
   const theme = useTheme();
   const autoItems = useAgendaItems();
   const resolvedItems = items ?? autoItems;
+
+  const count = resolvedItems.length;
+  const useGrid = count > 5;
+  const compact = count > 10;
+
+  const rows = useGrid ? Math.ceil(count / 2) : count;
+  const gap = compact ? 6 : useGrid ? 8 : 12;
+  const itemPadding = compact ? "8px 14px" : useGrid ? "10px 16px" : "14px 20px";
+  const numberSize = compact ? 16 : useGrid ? 18 : 20;
+  const titleSize = compact ? 13 : useGrid ? 14 : 15;
+  const descSize = compact ? 11 : 12;
+  const headingSize = useGrid ? 28 : 34;
+  const headingMargin = compact ? 16 : useGrid ? 20 : 28;
 
   return (
     <div
@@ -382,50 +397,83 @@ export function AgendaSlide({ title = "Agenda", items }: AgendaSlideProps) {
         display: "flex",
         flexDirection: "column",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}
     >
       <div
         style={{
           fontFamily: theme.fontDisplay,
-          fontSize: 34,
+          fontSize: headingSize,
           fontWeight: 700,
           color: theme.text,
-          marginBottom: 28,
+          marginBottom: headingMargin,
           letterSpacing: "-0.02em",
+          flexShrink: 0,
         }}
       >
         {title}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: useGrid ? "1fr 1fr" : "1fr",
+          gridTemplateRows: useGrid ? `repeat(${rows}, auto)` : undefined,
+          gridAutoFlow: useGrid ? "column" : undefined,
+          gap,
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         {resolvedItems.map((item, i) => (
           <div
             key={i}
             style={{
               background: theme.surface,
               borderRadius: theme.radius,
-              padding: "14px 20px",
+              padding: itemPadding,
               display: "flex",
               alignItems: "center",
-              gap: 16,
+              gap: compact ? 10 : useGrid ? 12 : 16,
             }}
           >
             <div
               style={{
                 fontFamily: theme.fontDisplay,
-                fontSize: 20,
+                fontSize: numberSize,
                 fontWeight: 700,
                 color: theme.accent,
-                minWidth: 32,
+                minWidth: compact ? 24 : 32,
+                flexShrink: 0,
               }}
             >
               {String(item.number).padStart(2, "0")}
             </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: theme.text, fontFamily: theme.fontBody }}>
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: titleSize,
+                  fontWeight: 600,
+                  color: theme.text,
+                  fontFamily: theme.fontBody,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {item.title}
               </div>
               {item.description && (
-                <div style={{ fontSize: 12, color: theme.textMuted, marginTop: 2, fontFamily: theme.fontBody }}>
+                <div
+                  style={{
+                    fontSize: descSize,
+                    color: theme.textMuted,
+                    marginTop: 2,
+                    fontFamily: theme.fontBody,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {item.description}
                 </div>
               )}
