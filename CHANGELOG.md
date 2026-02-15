@@ -9,6 +9,52 @@ AI がコード生成時に「どのバージョンでどの API が使えるか
 
 ## [Unreleased]
 
+### Added — 新規 API
+
+#### Components
+- **`Footnote`** — スライド下部の出典・注釈 (`FootnoteProps`)
+  ```tsx
+  <Footnote>出典: 経済産業省「EC市場調査」2025年7月</Footnote>
+  ```
+- **`Callout`** — キーインサイト強調ボックス (`CalloutProps`)
+  ```tsx
+  <Callout icon="💡" title="Key Takeaway" variant="positive">
+    APAC市場が売上成長の主因である
+  </Callout>
+  ```
+- **`Divider`** — スライド内の視覚的区切り線 (`DividerProps`)
+  ```tsx
+  <Divider spacing="lg" />
+  ```
+
+#### Charts
+- **`WaterfallChart`** — ウォーターフォール（ブリッジ）チャート (`WaterfallChartProps`, `WaterfallItem`)
+  ```tsx
+  <WaterfallChart data={[
+    { label: "Q3売上", value: 1000, isTotal: true },
+    { label: "新規", value: 300 },
+    { label: "解約", value: -200 },
+    { label: "Q4売上", value: 0, isTotal: true },
+  ]} />
+  ```
+
+#### Theme
+- **`SlideTheme.positive`** — ポジティブ値（成長・達成）を示すセマンティックカラー
+- **`SlideTheme.negative`** — ネガティブ値（減少・問題）を示すセマンティックカラー
+
+#### Content enhancements
+- **`StatCard`**: `sentiment` prop 追加 — change の色の意味づけを明示的に上書き可能
+  ```tsx
+  <StatCard value="$800K" label="コスト" change="-5%" sentiment="positive" />
+  ```
+
+### Changed — 破壊的変更
+
+- **`SlideTheme`**: `positive: string` と `negative: string` が必須プロパティとして追加。カスタムテーマを定義している場合は追加が必要
+- **`StatCard`**: change の色が `#22C55E` / `#EF4444` ハードコードから `theme.positive` / `theme.negative` に変更。プリセットテーマ使用時は見た目の変化なし
+- **`Callout`**: variant の色がテーマのセマンティックカラーを参照するよう変更
+- **`WaterfallChart`**: 正値/負値の色が `theme.positive` / `theme.negative` を使用（`positiveColor` / `negativeColor` prop で上書き可能）
+
 ---
 
 ## [0.3.0] — 2026-02-15

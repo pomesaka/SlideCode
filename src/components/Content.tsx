@@ -506,13 +506,22 @@ export function CodeBlock({ children, lang, plain }: CodeBlockProps) {
 /**
  * @example
  * <StatCard value="$1.2M" label="Revenue" change="+12%" icon="💰" />
+ * <StatCard value="$800K" label="Cost" change="-5%" sentiment="positive" />
  * <StatCard value="99.9%" label="Uptime" compact />
  */
 export interface StatCardProps {
   value: string;
   label: string;
-  /** "-" で始まると赤↓、それ以外は緑↑ で表示 */
+  /** "-" で始まると赤↓、それ以外は緑↑ で表示。sentiment で上書き可能 */
   change?: string;
+  /**
+   * change の色の意味づけを明示的に指定する。
+   * 省略時は change の先頭文字（+/-）から自動判定。
+   * コスト削減など「減少 = ポジティブ」の場合に使用する。
+   * - "positive": theme.positive（緑系）で表示
+   * - "negative": theme.negative（赤系）で表示
+   */
+  sentiment?: "positive" | "negative";
   icon?: string;
   compact?: boolean;
 }
@@ -522,15 +531,16 @@ export interface StatCardProps {
  * @example
  * <Grid cols={3}>
  *   <StatCard value="$1.2M" label="Revenue" change="+12%" icon="💰" />
- *   <StatCard value="3,400" label="Users" change="+8%" icon="👥" />
+ *   <StatCard value="$800K" label="Cost" change="-5%" sentiment="positive" icon="📉" />
  *   <StatCard value="99.9%" label="Uptime" icon="⚡" />
  * </Grid>
  */
-export function StatCard({ value, label, change, icon, compact }: StatCardProps) {
+export function StatCard({ value, label, change, icon, compact, sentiment }: StatCardProps) {
   const theme = useTheme();
-  const isNegative = change?.startsWith("-");
-  const changeColor = isNegative ? "#EF4444" : "#22C55E";
-  const changeArrow = isNegative ? "↓" : "↑";
+  const isDecreasing = change?.startsWith("-");
+  const effectiveSentiment = sentiment ?? (isDecreasing ? "negative" : "positive");
+  const changeColor = effectiveSentiment === "negative" ? theme.negative : theme.positive;
+  const changeArrow = isDecreasing ? "↓" : "↑";
 
   return (
     <div

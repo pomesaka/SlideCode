@@ -6,6 +6,9 @@ SlideCodeは、AIが生成しやすいプレゼンテーション用Reactコン�
 React/JSXでスライドを記述し、ブラウザ上でプレゼンテーションを表示する。
 npmパッケージとして配布する。
 
+**関連ドキュメント:**
+- [docs/BEST_PRACTICES.md](docs/BEST_PRACTICES.md) — スライド作成のベストプラクティス（構成・カラー・データ可視化・レイアウト設計）
+
 ## ビルド・開発コマンド
 
 ```bash
@@ -48,6 +51,9 @@ src/
     Table.tsx           # テーブル（ヘッダー・striped・compact対応）
     LinkTag.tsx         # 外部リンク用ピル型タグ
     Checklist.tsx       # チェックリスト（チェック済み表示対応）
+    Footnote.tsx        # 出典・注釈（スライド下部に自動配置）
+    Callout.tsx         # キーインサイト強調ボックス（So What? の明示）
+    Divider.tsx         # スライド内の視覚的区切り線
   charts/
     index.tsx           # 全チャートコンポーネント
   templates/
@@ -94,6 +100,8 @@ interface SlideTheme {
   primary: string;
   secondary: string;
   accent: string;
+  positive: string;   // ポジティブ値（成長・達成）の色
+  negative: string;   // ネガティブ値（減少・問題）の色
   text: string;
   textMuted: string;
   textOnPrimary: string;
@@ -144,7 +152,7 @@ interface SlideTheme {
 - **BulletList**: `items: ReactNode[]`, `icon: string`(デフォルト "→")、accent色アイコン。**items にリンクや太字を含む ReactNode も指定可能**
 - **Quote**: 左ボーダー（accent色、3px）、fontDisplay 22px italic
 - **CodeBlock**: JetBrains Mono / Fira Code、13px、`lang` prop。**`lang` 指定時にシンタックスハイライト対応（JS/TS, Python, JSON, HTML, CSS）**。`plain` propでハイライト無効化可能
-- **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), icon, compact
+- **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), sentiment("positive"/"negative"でchange色を上書き), icon, compact
 
 ### 新規コンポーネント
 
@@ -154,6 +162,9 @@ interface SlideTheme {
 - **Table**: テーブル表示。`headers?: ReactNode[]`, `rows: ReactNode[][]`(必須), `striped`, `compact`。テーマのfontBody/surface/text使用
 - **LinkTag**: 外部リンク用ピル型タグ。`href`, `children`(必須), `target`(デフォルト `"_blank"`), `color`。`rel="noopener noreferrer"` 自動付与
 - **Checklist**: チェックリスト。`items: ReactNode[]`(必須), `title?`, `checked?: boolean[]`。accent色チェックマーク
+- **Footnote**: 出典・注釈コンポーネント。`children: ReactNode`。`marginTop: "auto"` でスライド下部に自動配置。10px、textMuted色。データの信頼性担保のため全データスライドでの使用を推奨
+- **Callout**: キーインサイト強調ボックス。`children`(必須), `icon?`, `title?`, `variant`: "insight"(デフォルト/accent色)/"positive"(緑)/"warning"(赤)/"neutral"(primary色)。左ボーダー + 薄い背景色。スライドの「So What?」を明示するために使用
+- **Divider**: スライド内の視覚的区切り線。`spacing`: sm(8px)/md(16px)/lg(24px)、`color?`。primary + 透過の 1px ライン
 
 ### チャートコンポーネント
 
@@ -169,6 +180,7 @@ interface SlideTheme {
 - **Sparkline**: `data: number[]`, width(120), height(32), インライン用
 - **ProgressRing**: value(0-100), SVG circle、中央に%値
 - **ProgressBar**: value(0-100), 6px高さバー
+- **WaterfallChart**: ウォーターフォール（ブリッジ）チャート。`data: Array<{label, value, color?, isTotal?}>`。コンサル必須のブリッジチャート。売上ブリッジ、コスト分析、差異分析に最適。`isTotal: true` で累計バーを描画。正値は chartColors[0]、負値は赤、合計は primary 色
 
 ### テンプレートスライド
 
@@ -372,11 +384,13 @@ export { Deck, Slide, Split, Grid, SLIDE_W, SLIDE_H }
 export { Spacer, Title, Subtitle, Body, Badge, BulletList, Quote, CodeBlock, StatCard }
 
 // New Components
-export { Card, Image, Timeline, Table, LinkTag, Checklist }
+export { Card, Image, Timeline, Table, LinkTag, Checklist,
+         Footnote, Callout, Divider }
 
 // Charts
 export { BarChart, HorizontalBarChart, GroupedBarChart, LineChart, AreaChart,
-         DonutChart, ScatterPlot, Sparkline, ProgressRing, ProgressBar }
+         DonutChart, ScatterPlot, Sparkline, ProgressRing, ProgressBar,
+         WaterfallChart }
 
 // Templates
 export { CoverSlide, SectionDivider, ThankYouSlide, AgendaSlide, TeamSlide }
@@ -394,10 +408,11 @@ export type { SlideTheme, DeckProps, SlideProps, SlideDecoration, SplitProps, Gr
              BulletListProps, QuoteProps, CodeBlockProps, StatCardProps,
              CardProps, ImageProps, TimelineProps, TimelineItemData,
              TableProps, LinkTagProps, ChecklistProps,
-             ChartDataPoint, LineSeries, ScatterSeries, GroupedBarGroup,
+             FootnoteProps, CalloutProps, DividerProps,
+             ChartDataPoint, LineSeries, ScatterSeries, GroupedBarGroup, WaterfallItem,
              BarChartProps, HorizontalBarChartProps, GroupedBarChartProps,
              LineChartProps, AreaChartProps, DonutChartProps, ScatterPlotProps,
-             SparklineProps, ProgressRingProps, ProgressBarProps,
+             SparklineProps, ProgressRingProps, ProgressBarProps, WaterfallChartProps,
              CoverSlideProps, SectionDividerProps, ThankYouSlideProps,
              AgendaSlideProps, TeamSlideProps, TeamMember,
              SlideMetadata, AgendaItem }
