@@ -45,7 +45,7 @@ jobs:
 
       - name: Bump minor version
         if: steps.check.outputs.has_changes == 'true'
-        run: npm version minor -m "chore: bump version to %s"
+        run: 'npm version minor -m "chore: bump version to %s"'
 
       - name: Push version commit and tag
         if: steps.check.outputs.has_changes == 'true'
