@@ -621,6 +621,191 @@ export function ProgressRing({ value, size = 64, thickness = 5, color, label }: 
   );
 }
 
+/* ── WaterfallChart ── */
+
+/**
+ * @example
+ * const item: WaterfallItem = { label: "売上増", value: 200 };
+ * const total: WaterfallItem = { label: "合計", value: 0, isTotal: true };
+ */
+export interface WaterfallItem {
+  label: string;
+  /** 増減値（isTotal 時は無視され自動計算される） */
+  value: number;
+  color?: string;
+  /** true にするとその時点までの累計値を描画する */
+  isTotal?: boolean;
+}
+
+/**
+ * @example
+ * <WaterfallChart
+ *   data={[
+ *     { label: "Q3売上", value: 1000, isTotal: true },
+ *     { label: "新規顧客", value: 300 },
+ *     { label: "既存拡大", value: 150 },
+ *     { label: "解約", value: -200 },
+ *     { label: "値引き", value: -50 },
+ *     { label: "Q4売上", value: 0, isTotal: true },
+ *   ]}
+ * />
+ */
+export interface WaterfallChartProps {
+  data: WaterfallItem[];
+  height?: number;
+  showValues?: boolean;
+  /** 正の値の色 @default テーマの chartColors[0] */
+  positiveColor?: string;
+  /** 負の値の色 @default "#EF4444" */
+  negativeColor?: string;
+  /** 合計バーの色 @default テーマの primary */
+  totalColor?: string;
+}
+
+/**
+ * ウォーターフォール（ブリッジ）チャート。増減の積み上げを可視化する。
+ * コンサルティングで多用される売上ブリッジ、コスト分析、差異分析に最適。
+ * @example
+ * <WaterfallChart
+ *   data={[
+ *     { label: "Q3売上", value: 1000, isTotal: true },
+ *     { label: "新規", value: 300 },
+ *     { label: "拡大", value: 150 },
+ *     { label: "解約", value: -200 },
+ *     { label: "Q4売上", value: 0, isTotal: true },
+ *   ]}
+ * />
+ */
+export function WaterfallChart({
+  data,
+  height = 200,
+  showValues = true,
+  positiveColor,
+  negativeColor = "#EF4444",
+  totalColor,
+}: WaterfallChartProps) {
+  const theme = useTheme();
+  const posColor = positiveColor ?? theme.chartColors[0];
+  const totColor = totalColor ?? theme.primary;
+
+  // Calculate running totals
+  const bars: Array<{
+    label: string;
+    start: number;
+    end: number;
+    value: number;
+    isTotal: boolean;
+    color: string;
+  }> = [];
+
+  let running = 0;
+  for (const item of data) {
+    if (item.isTotal) {
+      // For the first total, use its value as the starting point
+      // For subsequent totals, use the running total
+      const totalValue = bars.length === 0 ? item.value : running;
+      bars.push({
+        label: item.label,
+        start: 0,
+        end: totalValue,
+        value: totalValue,
+        isTotal: true,
+        color: item.color ?? totColor,
+      });
+      running = totalValue;
+    } else {
+      const start = running;
+      running += item.value;
+      bars.push({
+        label: item.label,
+        start,
+        end: running,
+        value: item.value,
+        isTotal: false,
+        color: item.color ?? (item.value >= 0 ? posColor : negativeColor),
+      });
+    }
+  }
+
+  const allValues = bars.flatMap((b) => [b.start, b.end]);
+  const minVal = Math.min(0, ...allValues);
+  const maxVal = Math.max(...allValues);
+  const range = maxVal - minVal || 1;
+
+  const pad = { top: 20, bottom: 30 };
+  const chartH = height - pad.top - pad.bottom;
+  const barW = Math.min(50, (960 - 80) / data.length - 10);
+  const totalW = data.length * (barW + 10) + 20;
+
+  const getY = (v: number) => pad.top + chartH - ((v - minVal) / range) * chartH;
+
+  return (
+    <svg viewBox={`0 0 ${totalW} ${height}`} width="100%" height={height}>
+      {/* Zero line if needed */}
+      {minVal < 0 && (
+        <line
+          x1={5}
+          y1={getY(0)}
+          x2={totalW - 5}
+          y2={getY(0)}
+          stroke={theme.textMuted + "30"}
+          strokeDasharray="4 2"
+        />
+      )}
+      {bars.map((bar, i) => {
+        const x = 10 + i * (barW + 10);
+        const top = getY(Math.max(bar.start, bar.end));
+        const bottom = getY(Math.min(bar.start, bar.end));
+        const barH = Math.max(bottom - top, 1);
+
+        return (
+          <g key={i}>
+            {/* Connector line to previous bar */}
+            {i > 0 && !bar.isTotal && (
+              <line
+                x1={x - 10}
+                y1={getY(bar.start)}
+                x2={x + 2}
+                y2={getY(bar.start)}
+                stroke={theme.textMuted + "40"}
+                strokeWidth={1}
+                strokeDasharray="3 2"
+              />
+            )}
+            {/* Bar */}
+            <rect x={x} y={top} width={barW} height={barH} fill={bar.color} rx={3} />
+            {/* Value label */}
+            {showValues && (
+              <text
+                x={x + barW / 2}
+                y={bar.value >= 0 ? top - 5 : bottom + 12}
+                textAnchor="middle"
+                fontSize={9}
+                fill={theme.text}
+                fontFamily={theme.fontBody}
+                fontWeight={bar.isTotal ? 700 : 400}
+              >
+                {bar.isTotal ? bar.value : (bar.value >= 0 ? "+" : "") + bar.value}
+              </text>
+            )}
+            {/* X label */}
+            <text
+              x={x + barW / 2}
+              y={height - 6}
+              textAnchor="middle"
+              fontSize={9}
+              fill={theme.textMuted}
+              fontFamily={theme.fontBody}
+            >
+              {bar.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 /* ── ProgressBar ── */
 
 export interface ProgressBarProps {

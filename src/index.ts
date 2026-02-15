@@ -23,6 +23,9 @@ export { Timeline } from "./components/Timeline";
 export { Table } from "./components/Table";
 export { LinkTag } from "./components/LinkTag";
 export { Checklist } from "./components/Checklist";
+export { Footnote } from "./components/Footnote";
+export { Callout } from "./components/Callout";
+export { Divider } from "./components/Divider";
 
 // Charts
 export {
@@ -36,6 +39,7 @@ export {
   Sparkline,
   ProgressRing,
   ProgressBar,
+  WaterfallChart,
 } from "./charts";
 
 // Templates
@@ -78,6 +82,9 @@ export type { TimelineProps, TimelineItemData } from "./components/Timeline";
 export type { TableProps } from "./components/Table";
 export type { LinkTagProps } from "./components/LinkTag";
 export type { ChecklistProps } from "./components/Checklist";
+export type { FootnoteProps } from "./components/Footnote";
+export type { CalloutProps } from "./components/Callout";
+export type { DividerProps } from "./components/Divider";
 
 // Types — Charts
 export type {
@@ -85,6 +92,7 @@ export type {
   LineSeries,
   ScatterSeries,
   GroupedBarGroup,
+  WaterfallItem,
   BarChartProps,
   HorizontalBarChartProps,
   GroupedBarChartProps,
@@ -95,6 +103,7 @@ export type {
   SparklineProps,
   ProgressRingProps,
   ProgressBarProps,
+  WaterfallChartProps,
 } from "./charts";
 
 // Types — Templates
