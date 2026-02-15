@@ -283,6 +283,10 @@ SlideCode の内部解像度は 960×540px です。以下のガイドライン�
 <StatCard value="$1.2M" label="売上" change="+23%" />   {/* theme.positive で表示 */}
 <StatCard value="$800K" label="コスト" change="-5%" />   {/* theme.negative で表示 */}
 
+// sentiment で色の意味づけを上書き（コスト削減 = ポジティブ、離脱率増加 = ネガティブ）
+<StatCard value="$800K" label="コスト" change="-5%" sentiment="positive" />  {/* 緑↓ */}
+<StatCard value="12%" label="離脱率" change="+3%" sentiment="negative" />    {/* 赤↑ */}
+
 // Callout も variant でセマンティックカラーを自動適用
 <Callout variant="positive" icon="✅">目標達成</Callout>  {/* theme.positive */}
 <Callout variant="warning" icon="⚠️">リスク</Callout>     {/* theme.negative */}

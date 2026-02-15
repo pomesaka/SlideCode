@@ -149,7 +149,7 @@ interface SlideTheme {
 - **BulletList**: `items: ReactNode[]`, `icon: string`(デフォルト "→")、accent色アイコン。**items にリンクや太字を含む ReactNode も指定可能**
 - **Quote**: 左ボーダー（accent色、3px）、fontDisplay 22px italic
 - **CodeBlock**: JetBrains Mono / Fira Code、13px、`lang` prop。**`lang` 指定時にシンタックスハイライト対応（JS/TS, Python, JSON, HTML, CSS）**。`plain` propでハイライト無効化可能
-- **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), icon, compact
+- **StatCard**: value(28px/compact時24px), label(12px), change("-"始まりで赤↓、他は緑↑), sentiment("positive"/"negative"でchange色を上書き), icon, compact
 
 ### 新規コンポーネント
 
