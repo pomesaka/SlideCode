@@ -48,6 +48,7 @@ export {
   SectionDivider,
   ThankYouSlide,
   AgendaSlide,
+  ComparisonSlide,
   TeamSlide,
 } from "./templates";
 
@@ -112,6 +113,8 @@ export type {
   SectionDividerProps,
   ThankYouSlideProps,
   AgendaSlideProps,
+  ComparisonSlideProps,
+  ComparisonSide,
   TeamSlideProps,
   TeamMember,
 } from "./templates";

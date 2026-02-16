@@ -6,13 +6,17 @@ import { useTheme } from "../hooks/useTheme";
 /**
  * @example
  * <Card icon="🍣" title="ひとし（本店）" description="石垣島No.1居酒屋" />
+ * <Card icon="🔄" title="レガシーモダナイゼーション"
+ *   description={<><LinkTag href="...">9.8兆円の DX 市場</LinkTag>。AI で刷新コストを圧縮。</>}
+ * />
  * <Card title="カスタム" bg="#FFF3E0">
  *   <Body>自由なコンテンツ</Body>
  * </Card>
  */
 export interface CardProps {
   title: string;
-  description?: string;
+  /** 説明文。ReactNode を受け付けるため、LinkTag や太字なども直接渡せる */
+  description?: ReactNode;
   icon?: string;
   /** 画像URL。上部に表示 */
   image?: string;

@@ -3,10 +3,11 @@ import { useEffect, useState, type RefObject } from "react";
 /**
  * コンテナの幅に合わせてスケール値を計算するフック。
  * ResizeObserver でリアクティブに更新される。
+ * コンテナが baseWidth より大きい場合は 1 以上にスケールアップする。
  * @example
  * const ref = useRef<HTMLDivElement>(null);
  * const scale = useContainerScale(ref, SLIDE_W);
- * // scale: 0.0 〜 1.0（parentWidth / baseWidth、最大1）
+ * // scale: parentWidth / baseWidth（制限なし）
  */
 export function useContainerScale(
   ref: RefObject<HTMLElement | null>,
@@ -20,7 +21,7 @@ export function useContainerScale(
 
     const update = () => {
       const w = el.clientWidth;
-      setScale(Math.min(w / baseWidth, 1));
+      setScale(w / baseWidth);
     };
 
     update();
