@@ -65,9 +65,11 @@ src/
 ### スライド描画方式
 
 - 各スライドは固定内部解像度 **960 x 540px**（16:9）で描画
-- `ResizeObserver` で親要素の幅を測定し、`scale = Math.min(parentWidth / 960, 1)` で縮小
+- `ResizeObserver` で親要素の幅を測定し、`scale = parentWidth / 960` でスケーリング
+- 親要素が960pxより広い場合はスケールアップ、狭い場合はスケールダウン
 - `transformOrigin: "top left"` + `transform: scale(${scale})` でスケーリング
 - コンテナの高さを `540 * scale` に自動調整
+- `Deck` の `maxWidth` prop で最大幅を制限可能（指定しない場合は親幅いっぱいに広がる）
 
 ### テーマシステム
 

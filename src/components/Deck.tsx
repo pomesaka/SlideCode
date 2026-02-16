@@ -151,7 +151,7 @@ export function Deck({ children, theme = "corporate", onSlideChange, maxWidth, p
     <DeckContext.Provider value={agendaItems}>
       <div
         ref={containerRef}
-        style={{ maxWidth: maxWidth ?? SLIDE_W, margin: "0 auto", padding, fontFamily: resolvedTheme.fontBody, overflow: "hidden" }}
+        style={{ maxWidth: maxWidth, margin: "0 auto", padding, fontFamily: resolvedTheme.fontBody, overflow: "hidden" }}
       >
         <div
           style={{
