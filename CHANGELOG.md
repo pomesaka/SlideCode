@@ -9,6 +9,36 @@ AI がコード生成時に「どのバージョンでどの API が使えるか
 
 ## [Unreleased]
 
+### Added — 新規 API
+
+#### Templates
+- **`ComparisonSlide`** — Before/After 比較テンプレートスライド (`ComparisonSlideProps`, `ComparisonSide`)
+  ```tsx
+  <ComparisonSlide
+    title="開発者の役割が根本から変わる"
+    left={{ icon: "📝", title: "従来（〜2025）", items: ["自分でコードを書く", "手動テスト"] }}
+    right={{ icon: "🚀", title: "これから（2026〜）", items: ["AI 出力のレビュー", "設計に集中"] }}
+  />
+  ```
+
+#### Deck enhancements
+- **`Deck`**: `maxWidth` prop 追加 — 外枠の最大幅（px）を指定。ラッパー div が不要になる
+- **`Deck`**: `padding` prop 追加 — 外枠のパディングを指定。ラッパー div が不要になる
+  ```tsx
+  <Deck theme="corporate" maxWidth={1000} padding="24px 16px">
+  ```
+
+### Changed — 破壊的変更
+
+- **`CardProps.description`**: `string` → `ReactNode` — LinkTag や太字を含む ReactNode を直接渡せるようになった（既存の string は引き続き動作）
+  ```tsx
+  <Card icon="🔄" title="タイトル"
+    description={<><LinkTag href="...">リンク</LinkTag>。説明文。</>}
+  />
+  ```
+- **`Deck`**: デフォルトの最大幅制限（960px）を撤廃。親要素の幅に合わせてスケールアップするようになった。従来の固定幅が必要な場合は `maxWidth={960}` を指定
+- **`useContainerScale`**: scale の上限（最大1.0）を撤廃。コンテナが 960px より広い場合は 1 以上にスケールアップする
+
 ---
 
 ## [0.4.0] — 2026-02-15
